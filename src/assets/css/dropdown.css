@@ -1,0 +1,54 @@
+.dropdown{
+	position: relative;
+}
+
+.dropdown .dropdown-element{
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: unset;
+	z-index: 150;
+}
+.dropdown.bottom .dropdown-element{
+	top: unset;
+	bottom: 100%;
+}
+.dropdown.right .dropdown-element{
+	left: unset;
+	right: 0;
+}
+.dropdown.dropdown-absolute.top{
+	position: absolute;
+	top: 0px;
+}
+.dropdown.dropdown-absolute.right{
+	position: absolute;
+	right: 0px;
+}
+.dropdown .btn-menu{
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.dropdown.dropup{
+
+}
+.dropdown.dropup .dropdown-element{
+	top: unset;
+	bottom: 120%;
+}
+
+.dropdown .dropdown-mask{
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 149;
+	background-color: transparent;
+}
+.dropdown .dropdown-element p{
+	margin: 0;
+}
+
