@@ -4,8 +4,6 @@ import Spinner from '../../component/Spinner'
 
 import Home from './Home'
 
-import '../../assets/css/calendar.css'
-
 class Main extends Component {
     state = {
 

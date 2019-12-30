@@ -1,0 +1,132 @@
+.sky-calendar{
+	background-color: #fff;
+	padding: 10px 20px;
+}
+
+.sky-calendar-header{
+	padding: 20px 0px;
+}
+.sky-calendar-header .sky-calendar-cmd{
+	width: 100%;
+}
+.sky-calendar-header .btn.active{
+	background-color: #bbb;
+}
+.sky-calendar-header .dropdown-menu{
+	max-height: 320px;
+	overflow-y: auto;
+}
+
+.sky-calendar-body{
+	width: 100%;
+	overflow: auto;
+	padding-bottom: 120px;
+}
+
+/*Table*/
+.calendar .calendar-header td{
+	font-family: 'Hind Bold';
+	padding: 10px 40px;
+	text-align: center;
+	position: sticky;
+	top: 0;
+	z-index: 99;
+	background-color: #fff;
+}
+.calendar .calendar-hour,
+.calendar .calendar-date{
+	font-family: 'Hind Bold';
+	padding: 10px 40px;
+	text-align: center;
+	background-color: #fff;
+	position: sticky;
+	left: 0;
+	z-index: 98;
+}
+
+/*Month*/
+.calendar-month{
+	min-width: 100%;
+}
+
+.calendar-month .calendar-header td{
+	font-family: 'Hind Bold';
+	padding: 10px 40px;
+	text-align: center;
+}
+.calendar-month tr td{
+	position: relative;
+	padding: 40px;
+	border: 1px solid #bbb;
+	cursor: pointer;
+}
+.calendar-month tr td.now{
+	background-color: #bbb;
+}
+.calendar-hours tr td.selected,
+.calendar-month tr td.selected,
+.calendar-year tr td.selected,
+.calendar-hours tr td:hover,
+.calendar-month tr td:hover,
+.calendar-year tr td:hover{
+	background-color: #eee;
+}
+.calendar-month tr td.active span.text{
+	color: #000;
+}
+.calendar-month tr td span.text{
+	position: absolute;
+	top: 15px;
+	left: 15px;
+	color: #888;
+}
+.calendar-hours tr td .dropdown,
+.calendar-year tr td .dropdown,
+.calendar-month tr td .dropdown{
+	position: initial;
+}
+.calendar-month tr td .dropdown .dropdown-element{
+	top: 90%;
+}
+.calendar-hours tr td .menu-wrapper,
+.calendar-year tr td .menu-wrapper,
+.calendar-month tr td .menu-wrapper{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 2;
+}
+/*Year*/
+.calendar-year{
+	min-width: 100%;
+}
+.calendar-year tr td{
+	position: relative;
+	padding: 10px 20px;
+	border: 1px solid #bbb;
+	cursor: pointer;
+}
+.calendar-year tr td.not-active{
+	background-color: #eee;
+}
+.calendar-year tr td.week-end{
+	background-color: #d7fdeb;
+}
+
+/*Hours*/
+.calendar-hours{
+	min-width: 100%;
+}
+
+.calendar-hours .calendar-hour{
+	padding: 5px 5px;
+	text-align: right;
+}
+.calendar-hours tr td{
+	position: relative;
+	padding: 10px 20px;
+	border: 1px solid #bbb;
+	cursor: pointer;
+}

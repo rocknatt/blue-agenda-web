@@ -28,5 +28,6 @@ class DateHelper {
     static get_days_in_mounth(month, year){
         return new Date(year, month + 1, 0).getDate()
     }
+    
 }
 export default DateHelper

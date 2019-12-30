@@ -1,134 +1,221 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux'
 
-import Utils from '../../Utils/Utils'
+import Calendar from './calendar'
+import Dropdown from '../../component/Dropdown'
 
 import DateHelper from '../../helper/date_helper'
 
-class Table extends Component {
-    state = {
+import './css/calendar.css'
+
+class Layout extends Component {
+	state = {
 
     }
 
-    lang = null
-    navigation = null
-
-    file_to_upload_list = []
-    file_uploaded_error_list = []
-
-    animation_intervale = null
+    year_creation = 2019
 
     constructor(props){
         super(props)
 
-        this.state = {
-            day: props.day,
-            month: props.month,
-            year: props.year,
-            layout: props.layout === undefined ? 'month' : props.layout,
+        let _date_now = new Date()
+        if (props.initial_date !== undefined) {
+        	_date_now = new Date(props.initial_date)
         }
 
-        //Todo : 
-        //- generate calendar (by month & year)
-        //- change layout view
-        //- render item inside row
-        //- return on_click item
-        //- drag and drop item
-    }
+        const _day = _date_now.getDate()
+        const _month = _date_now.getMonth()
+        const _year = _date_now.getFullYear()
 
-    componentWillMount(){
-
-    }
-
-    componentWillUnmount(){
-
+        this.state = {
+            day: _day,
+            month: _month,
+            year: _year,
+            calendar_layout: 'month',
+            last_calendar_layout: 'month',
+            cell_menu_list: props.cell_menu_list,
+        }
     }
 
     componentWillReceiveProps(nextProps){
-        this.setState({ 
-            day: nextProps.day, 
-            month: nextProps.month, 
-            year: nextProps.year,
-            layout: nextProps.layout,
-        })
+
+    }
+
+    componentWillMount(){
+        document.addEventListener('keydown', this.handle_key_down)
+    }
+
+    componentWillUnmount(){
+        document.removeEventListener('keydown', this.handle_key_down)
     }
 
     componentWillUpdate(nextProps, nextState){
 
     }
 
-    componentDidUpdate(){
-
-    }
-
     componentDidMount(){
-
+        
     }
 
-    get_day_list(month, year){
-        let i = 0
-        let day_list = []
-        let view_list = []
-        const first_day = DateHelper.get_first_day_in_mounth(month, year)
-        const date_nb = DateHelper.get_days_in_mounth(month, year)
+    handle_day_change(day){
+        this.setState({ day: day })
+    }
 
-        //write all dates
-        for (i = 1; i <= date_nb; i++) {
-            day_list.push({ day: i, month: month, year: year })
+    handle_month_change(month){
+        this.setState({ month: month })
+    }
+
+    handle_year_change(year){
+        this.setState({ year: year })
+    }
+
+    handle_prev_month_click(){
+
+        let _current_month = this.state.month - 1
+        let _current_year = this.state.year
+
+        if (this.state.calendar_layout === 'year') {
+            _current_year -= 1
+            this.setState({ year: _current_year })
+            return ;
         }
 
-        //write last month date
-        for (i = 0; i < first_day; i++) {
+        if (_current_month < 0) {
+            _current_month = 11
+            _current_year -= 1
+        }
 
-            let _current_month = month - 1
-            let _current_year = year
+        this.setState({ month: _current_month, year: _current_year })
+    }
 
-            if (_current_month < 0) {
-                _current_month = 11
-                _current_year -= 1
-            }
+    handle_next_month_click(){
+        let _current_month = this.state.month + 1
+        let _current_year = this.state.year
 
-            let _days_of_last_month = DateHelper.get_days_in_mounth(_current_month, _current_year)
-            day_list.splice(0, 0, { 
-                day: _days_of_last_month - i, 
-                month: _current_month, 
-                year: _current_year,
-                is_not_active: true
+        if (this.state.calendar_layout === 'year') {
+            _current_year += 1
+            this.setState({ year: _current_year })
+            return ;
+        }
+
+        if (_current_month >= 12) {
+            _current_month = 0
+            _current_year += 1
+        }
+
+        this.setState({ month: _current_month, year: _current_year })
+    }
+
+    handle_now_click(){
+        const _date_now = new Date()
+        const _day = _date_now.getDate()
+        const _month = _date_now.getMonth()
+        const _year = _date_now.getFullYear()
+
+        this.setState({ day: _day, month: _month, year: _year })
+    }
+
+    handle_key_down = (e) => {
+
+        let _current_day = this.state.day
+        let _current_month = this.state.month
+        let _current_year = this.state.year
+
+        const days_nb = DateHelper.get_days_in_mounth(this.state.month, this.state.year)
+
+        switch(e.keyCode){
+            //gauche
+            case 37:
+                _current_day--
+                break;
+
+            //droite
+            case 39:
+                _current_day++
+                break;  
+            //haut
+            case 38:
+                _current_day -= 7
+                break;
+            //bas
+            case 40:
+                _current_day += 7
+                break;
+        }
+
+        if (_current_day > days_nb) {
+            _current_month += 1
+            _current_day = 1
+        }
+        else if (_current_day <= 0){
+            _current_month -=  1
+            _current_day = DateHelper.get_days_in_mounth(_current_month, _current_year)
+        }
+
+        if (_current_month >= 12) {
+            _current_month = 0
+            _current_year += 1
+        }
+        else if (_current_month < 0){
+            _current_month = 11
+            _current_year -= 1
+            _current_day = DateHelper.get_days_in_mounth(_current_month, _current_year)
+        }
+
+        this.setState({ day: _current_day, month: _current_month, year: _current_year })
+    }
+
+    handle_table_layout_month_click(){
+        this.setState({ calendar_layout: 'month' })
+    }
+
+    handle_table_layout_year_click(){
+        this.setState({ calendar_layout: 'year' })
+    }
+
+    handle_calendar_cell_click = (data) => {
+        if (this.state.calendar_layout !== 'hour') {
+            this.setState(function (prevState) {
+                return {
+                    calendar_layout: 'hour',
+                    last_calendar_layout: prevState.calendar_layout,
+                }
             })
         }
 
-        //divide day_list to view_list
-        let week_nb = day_list.length / 7
-        let next_month_date_diff = 1
-        for (i = 0; i < week_nb; i++) {
-            view_list.push([])
-            for (var j = 0; j < 7; j++) {
-                let adr = day_list.shift()
-                if (adr !== undefined) {
-                    view_list[i].push(adr)
-                }
-                else{
-                    //write next month date
-                    let _current_month = month + 1
-                    let _current_year = year
+        //Todo : show dropdown inside cell and
+    }
 
-                    if (_current_month >= 12) {
-                        _current_month = 0
-                        _current_year += 1
+    handle_calendar_cell_menu_click = (label, data) => {
+        switch(label){
+            case 'details':
+
+                this.setState(function (prevState) {
+                    return {
+                        calendar_layout: 'hour',
+                        last_calendar_layout: prevState.calendar_layout, 
+                        day: data.day, 
+                        month: data.month, 
+                        year: data.year
+
                     }
+                })
+                break;
 
-                    view_list[i].push({ 
-                        day: next_month_date_diff, 
-                        month: _current_month, 
-                        year: _current_year,
-                        is_not_active: true
-                    })
-                    next_month_date_diff++
-                }
-                
-            }
+            default :
+            	if (this.props.onCellMenuClick !== undefined) {
+            		this.props.onCellMenuClick(label, data)
+            	}
+            	break;
         }
+    }
 
-        return view_list
+    handle_back_click(){
+        this.setState(function (prevState) {
+            return {
+                calendar_layout: prevState.last_calendar_layout,
+            }
+        })
     }
 
     get_month_list() {
@@ -148,34 +235,33 @@ class Table extends Component {
         ]
     }
 
-    /**
-     * empty canevas just to make jsx loop 31 times
-     * @return {array} 
-     */
-    get_day_list_canevas(){
-        let adr = []
-        for (var i = 1; i <= 31; i++) {
-            adr.push(i)
+    get_day_list(month, year){
+        let day_list = []
+        const days_nb = DateHelper.get_days_in_mounth(month, year)
+
+        for (var i = 1; i <= days_nb; i++) {
+            day_list.push(i)
         }
 
-        return adr
+        return day_list
     }
 
-    has_date(day, month, year){
-        const date_nb = DateHelper.get_days_in_mounth(month, year)
+    /**
+     * get year view list
+     * @return array list of year from application's creation to 5 years from now
+     */
+    get_year_list(){
+        let year_list = []
+        let _current_year = DateHelper.get_current_year()
 
-        return day <= date_nb 
+        for (var i = this.year_creation; i < _current_year + 5; i++) {
+            year_list.push(i)
+        }
+
+        return year_list
     }
 
-    is_week_end(day, month, year){
-        var d = new Date(Date.UTC(year, month, day));
-
-        return d.getDay() == 6 || d.getDay() == 0;
-    }
-
-    refresh(){
-        this.forceUpdate()
-    }
+    
 
     render() {
 
@@ -183,94 +269,142 @@ class Table extends Component {
             day,
             month,
             year,
-            layout,
+            calendar_layout,
+            cell_menu_list,
         } = this.state
 
-        const _date_now = new Date()
-        const state_now = {
-            day: _date_now.getDate(),
-            month: _date_now.getMonth(),
-            year: _date_now.getFullYear()
-        }
+        const date_list = this.get_day_list(month, year)
+        const month_list = this.get_month_list()
+        const year_list = this.get_year_list()
 
-        if (layout === 'month') {
+        const height = window.innerHeight - 200
+        
+        return (
+            <div className="sky-calendar">
+                <div className="sky-calendar-header">
+                    <div className="row">
+                        <div className="col-12 col-md-8 col-lg-9 mb-15">
+                            <div>
+                                {
+                                    calendar_layout === 'hour' &&
+                                    <button 
+                                        className={"btn btn-default " } 
+                                        title={ this.props.lang.line('std_back') }
+                                        onClick={() => this.handle_back_click() }><i className="fa fa-arrow-left"></i></button>
+                                }
+                                <button 
+                                    className={"btn btn-default " + (calendar_layout === 'year' ? 'active' : '') } 
+                                    title={ this.props.lang.line('std_display_list') }
+                                    onClick={() => this.handle_table_layout_year_click() }><i className="fa fa-list"></i></button>
+                                <button 
+                                    className={"btn btn-default " + (calendar_layout === 'month' ? 'active' : '') }
+                                    title={ this.props.lang.line('std_display_mosaic') }
+                                    onClick={() => this.handle_table_layout_month_click() }><i className="fa fa-table"></i></button>
+                            </div>
+                        </div>
+                        <div className="col-12 col-md-4 col-lg-3">
+                            <div className="sky-calendar-cmd btn-group">
+                                <button className="btn btn-default btn-block" onClick={(e) => this.handle_prev_month_click()}><i className="fa fa-chevron-left"></i></button>
 
-            const week_list = this.get_day_list(month, year)
+                                {
+                                    calendar_layout !== 'year' &&
+                                    <Dropdown
+                                        position="top right"
+                                        dropdown_btn={( 
+                                            <button className="btn btn-default btn-dropdown">{day}</button>
+                                        )}
+                                        dropdown_element={
+                                            (
+                                                <div className="dropdown-menu show  animated fadeInUp animated-x-fast">
+                                                    {
+                                                        date_list.map((_day, index) => (
+                                                            <a 
+                                                                key={index} 
+                                                                className={"dropdown-item " + (day === _day ? 'active' : '')} 
+                                                                onClick={(e) => this.handle_day_change(_day)}
+                                                                href="#">{_day}</a>
+                                                        ))
+                                                    }
+                                                </div>
+                                            )
+                                        }
+                                        />
+                                }
+                                
+                                {
+                                    calendar_layout !== 'year' &&
+                                    <Dropdown
+                                        position="top right"
+                                        dropdown_btn={( 
+                                            <button className="btn btn-default btn-block btn-dropdown">{this.props.lang.line(month_list[month])}</button>
+                                        )}
+                                        dropdown_element={
+                                            (
+                                                <div className="dropdown-menu show  animated fadeInUp animated-x-fast">
+                                                    {
+                                                        month_list.map((_month, index) => (
+                                                            <a 
+                                                                key={index} 
+                                                                className={"dropdown-item " + (month === index ? 'active' : '')} 
+                                                                onClick={(e) => this.handle_month_change(index)}
+                                                                href="#">{this.props.lang.line(_month)}</a>
+                                                        ))
+                                                    }
+                                                </div>
+                                            )
+                                        }
+                                        />
+                                }
+                                
 
-            return (
-                <table className="calendar-month">
-                    <tbody>
-                        <tr className="calendar-header">
-                            <td>{ this.props.lang.line('std_lun') }</td>
-                            <td>{ this.props.lang.line('std_mar') }</td>
-                            <td>{ this.props.lang.line('std_mer') }</td>
-                            <td>{ this.props.lang.line('std_jeu') }</td>
-                            <td>{ this.props.lang.line('std_ven') }</td>
-                            <td>{ this.props.lang.line('std_sam') }</td>
-                            <td>{ this.props.lang.line('std_dim') }</td>
-                        </tr>
-                        {
-                            week_list.map((day_list, row_index) => (
-                                <tr key={row_index}>
-                                    {
-                                        day_list.map((_day, day_index) => (
-                                            <td key={day_index} className={ 
-                                                (_day.is_not_active ? '' : 'active') + ' ' + 
-                                                ((_day.day === day && _day.month === month && _day.year === year) ? 'selected' : '') + ' ' +
-                                                ((_day.day === state_now.day && _day.month === state_now.month && _day.year === state_now.year) ? 'now' : '') }>
-                                                <span className="text">{ _day.day }</span>
-                                            </td>
-                                        ))
+                                <Dropdown
+                                    position="top right"
+                                    dropdown_btn={( 
+                                        <button className="btn btn-default btn-block btn-dropdown">{year}</button>
+                                    )}
+                                    dropdown_element={
+                                        (
+                                            <div className="dropdown-menu show  animated fadeInUp animated-x-fast">
+                                                {
+                                                    year_list.map((_year, index) => (
+                                                        <a 
+                                                            key={index} 
+                                                            className={"dropdown-item " + (year === _year ? 'active' : '')} 
+                                                            onClick={(e) => this.handle_year_change(_year)}
+                                                            href="#">{_year}</a>
+                                                    ))
+                                                }
+                                            </div>
+                                        )
                                     }
-                                </tr>
-                            ) )
-                        }
-                        
-                    </tbody>
-                </table>
-            )
-        }
+                                    />
 
-        if (layout === 'year') {
+                                <button className="btn btn-default btn-block" onClick={(e) => this.handle_next_month_click()}><i className="fa fa-chevron-right"></i></button>
+                            </div>
+                            <div className="sky-calendar-cmd btn-group">
+                                <button className="btn btn-default btn-block" onClick={(e) => this.handle_now_click()}><i className="fa fa-clock"></i> {this.props.lang.line('std_now')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="sky-calendar-body" style={{ height: height }}>
+                    <Calendar
+                        lang={this.props.lang}
+                        day={day}
+                        month={month}
+                        year={year}
+                        layout={calendar_layout}
+                        cell_menu_list={cell_menu_list}
+                        onCellMenuClick={this.handle_calendar_cell_menu_click}
+                        />
+                </div>
+                <div className="sky-footer">
 
-            const month_list = this.get_month_list()
-            const date_list = this.get_day_list_canevas()
-
-            return (
-                <table className="calendar-year">
-                    <tbody>
-                        <tr className="calendar-header">
-                            <td className="calendar-date"></td>
-                            {
-                                month_list.map((_month, index) => (
-                                    <td key={index}>{ this.props.lang.line(_month) }</td>
-                                ))
-                            }
-                        </tr>
-                        {
-                            date_list.map((day_canevas, index) => (
-                                <tr key={index}>
-                                    <td className="calendar-date">{ day_canevas }</td>
-                                    {
-                                        month_list.map((_month, month_index) => (
-                                            <td key={month_index} className={ 
-                                                ((day_canevas === day && month_index === month) ? 'selected' : '') + ' ' +
-                                                ((this.has_date(day_canevas, month_index, year)) ? '' : 'not-active') + ' ' +
-                                                ((this.has_date(day_canevas, month_index, year) && this.is_week_end(day_canevas, month_index, year)) ? 'week-end' : '') + ' ' +
-                                                ((day_canevas === state_now.day && month_index === state_now.month) ? 'now' : '') }>
-
-                                            </td>
-                                        ))
-                                    }
-                                </tr>
-                            ))
-                        }
-                        
-                    </tbody>
-                </table>
-            )
-        }
+                </div>
+            </div>
+            
+        )
     }
 }
 
-export default Table
+export default Layout

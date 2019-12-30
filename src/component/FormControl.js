@@ -46,13 +46,8 @@ class FormControl extends Component {
             input_class: this.get_default_value(props.input_class),
             input_name: this.get_default_value(props.input_name),
             input_type: this.get_default_value(props.input_type),
-            input_min_value: props.input_min_value,
-            input_max_value: props.input_max_value,
-            input_min_year_value: props.input_min_year_value,
-            input_max_year_value: props.input_max_year_value,
             input_value: this.get_default_input_value(props.input_default_value !== undefined ? props.input_default_value : props.input_value, props.input_type, props.input_option, props.is_select_multiple),
             input_placeholder: this.get_default_value(props.input_placeholder),
-            input_autocomplete: this.get_default_autocomplete_value(props.input_autocomplete),
 
             //Todo : limiter le nombre de valeur selectionnable
             input_select_max: props.input_select_max,
@@ -62,8 +57,6 @@ class FormControl extends Component {
 
             is_select_multiple: props.is_select_multiple,
             is_autosize: props.is_autosize,
-            input_option: props.input_option,
-            input_suggest: props.input_suggest,
             input_show_suggest_on_focus: props.input_show_suggest_on_focus,
             input_tooltip_info: props.input_tooltip_info,
             input_ponctual_error: '',
@@ -96,10 +89,6 @@ class FormControl extends Component {
             onButtonAddClick: props.onButtonAddClick,
             onValueInserted: props.onValueInserted,
 
-            //Date
-            min_year: props.min_year === undefined ? this.year_now - 90 : props.min_year,
-            year_length: props.year_length === undefined ? 90 : props.year_length,
-
             //State interne
             view_data_suggest: props.input_type === 'select' ? props.input_option : [],
             text_suggest: ''
@@ -114,24 +103,16 @@ class FormControl extends Component {
         this.input_year =  React.createRef()
 
         if (props.input_type === 'date') {
-            this.date_value = this.get_default_date_value(props.input_value)
+            
         }
 
         if (props.input_type === 'time') {
-            this.date_value = this.get_default_time_value(props.input_value)
-        }
-
-        if (props.input_type === 'select') {
-            this.data_suggest = props.input_option
+            
         }
     }
 
     componentWillReceiveProps(nextProps){
         this.setState(function(prevState, props){
-
-            if (prevState.input_type === 'select') {
-                this.data_suggest = nextProps.input_option
-            }
 
             return {
                 label: this.get_default_value(nextProps.label),
@@ -145,8 +126,6 @@ class FormControl extends Component {
                 input_max_year_value: nextProps.input_max_year_value,
                 input_value: this.get_default_input_value(nextProps.input_value, nextProps.input_type, nextProps.input_option, nextProps.is_select_multiple),
                 input_option: nextProps.input_option,
-
-                view_data_suggest: prevState.input_type === 'select' ? this.get_escaped_view_suggest() : [],
 
                 is_readonly: nextProps.is_readonly,
                 is_editable: props.is_editable === undefined ? true : props.is_editable,
@@ -184,9 +163,6 @@ class FormControl extends Component {
             this.props.onRef(this)
         }
 
-        if (this.state.input_suggest !== undefined) {
-            this.init_data_suggest(this.state.input_suggest)
-        }
         
         if (this.state.input_type === 'trackbar') {
             document.addEventListener('mousemove', this.handle_mouse_move)
@@ -201,34 +177,6 @@ class FormControl extends Component {
     //     //     this.state.input_value !== nextState.input_value
 
     // }
-
-    get_input_name(){
-        return this.state.input_name
-    }
-
-    get_input_value(){
-        if (this.state.input_type === 'select') {
-            if (this.state.is_select_multiple) {
-                var result = []
-                this.data_selected.map((_data) => {
-                    result.push(_data.value)
-                })
-                return result
-            }
-
-            return this.data_selected.value
-        }
-
-        if (this.state.input_type === 'date') {
-            return this.date_value.year + '/' + (parseInt(this.date_value.month) + 1) + '/' + this.date_value.date
-        }
-
-        if (this.state.input_type === 'time') {
-            return this.date_value.hour + ':' + this.date_value.minute + ':' + this.date_value.second
-        }
-
-        return this.state.input_value
-    }
 
     get_default_autocomplete_value(str){
         if (str === undefined) {
@@ -321,215 +269,6 @@ class FormControl extends Component {
         return str
     }
 
-    get_required_err(str){
-        if (str === undefined) {
-            return this.lang.line('std_required_err')
-        }
-
-        return str
-    }
-
-    get_email_valid_err(str){
-        if (str === undefined) {
-            return this.lang.line('std_email_valid_err')
-        }
-
-        return str
-    }
-
-    get_check_status(value){
-        if (this.state.input_type === 'radio') {
-            return this.state.input_value.includes(value) ? 'dot-circle' : 'circle'
-        }
-
-        if (this.state.input_type === 'checkbox') {
-            return this.state.input_value.includes(value) ? 'check-square' : 'square'
-        }
-    }
-
-    get_date_suggest(){
-        var data = []
-        for (var i = 1; i < 32; i++) {
-            data.push({ label: i.toString(), value: i.toString() })
-        }
-
-        return data
-    }
-
-    get_month_suggest(){
-        var month = this.lang.line('std_month_list_')
-        var adr = month.split(',')
-        var data = []
-
-        for (var i = 0; i < adr.length; i++) {
-            data.push({ label: adr[i], value: i.toString() })
-        }
-
-        return data
-    }
-
-    get_year_suggest(){
-        
-        var data = []
-        for (var i = this.state.min_year; i < (this.state.min_year + this.state.year_length); i++) {
-            data.push({ label: i.toString(), value: i.toString() })
-        }
-
-        return data
-    }
-
-    get_hour_suggest(){
-        var data = []
-
-        for (var i = 0; i < 24; i++) {
-            var str = i.toString()
-            if (str.length === 1) {
-                str = '0' + str
-            }
-            data.push({ label: str, value: i.toString() })
-        }
-
-        return data
-    }
-
-    get_minute_suggest(){
-        var data = []
-
-        for (var i = 0; i < 60; i++) {
-            var str = i.toString()
-            if (str.length === 1) {
-                str = '0' + str
-            }
-            data.push({ label: str, value: i.toString() })
-        }
-
-        return data
-    }
-
-    get_date_mouth_valid(){
-        return [
-            31,
-            29,//Todo: repérer les année bisextile
-            31,
-            30,
-            31,
-            30,
-            31,
-            31,
-            30,
-            31,
-            30,
-            31
-        ]
-    }
-
-    get_default_date_value(p_value){
-        if (p_value === undefined) {
-            return { date: 1, month: 0, year: this.year_now }
-        }
-
-        var date_time = Moment(p_value)
-
-        return { date: date_time.date(), month: date_time.month(), 'year': date_time.year() }
-    }
-
-    get_default_time_value(p_value){
-        if (p_value === undefined) {
-            return { hour: '00', minute: '00', second: '00' }
-        }
-
-        var adr = p_value.split(':')
-        if (adr[0] === undefined) {
-            adr[0] = '00'
-        }
-
-        if (adr[0].length === 1) {
-            adr[0] = '0' + adr[0]
-        }
-
-        if (adr[1] === undefined) {
-            adr[1] = '00'
-        }
-
-        if (adr[1].length === 1) {
-            adr[1] = '0' + adr[1]
-        }
-
-        if (adr[2] === undefined) {
-            adr[2] = '00'
-        }
-
-        if (adr[2].length === 1) {
-            adr[2] = '0' + adr[2]
-        }
-
-        return { hour: adr[0], minute: adr[1], second: adr[2] }
-    }
-
-    get_escaped_view_suggest(){
-        if (this.state.is_select_multiple) {
-            var result = []
-
-            this.data_suggest.map((data) => {
-                let is_inside = false
-
-                this.data_selected.map((_data) => {
-                    if (data.value === _data.value) {
-                        is_inside = true
-                    }
-                })
-                
-
-                if (!is_inside) {
-                    result.push(data)
-                }
-            })
-
-            return result
-        }
-
-        return this.data_suggest
-    }
-
-    set_value(p_value){
-        this.setState({ input_value: p_value })
-    }
-
-    set_max_value(p_value){
-        this.setState({ input_max_value: p_value })
-    }
-
-    show_ponctual_error(_value){
-        this.setState({ input_ponctual_error: _value })
-    }
-
-    hide_ponctual_error(){
-        this.setState({ input_ponctual_error: '' })
-    }
-
-    init_data_suggest(uri){
-
-        if (typeof uri === 'string') {
-            Utils.ajax({
-                url: uri,
-                type: 'GET',
-                data_type: 'json',
-                success: (response) => { 
-                    let result = []
-                    response.map((value) => {
-                        result.push({ label: value, value: value })
-                    })
-                    this.data_suggest = result
-                 }
-            })
-        }
-
-        if (typeof uri === 'object') {
-            this.data_suggest = uri
-            this.setState({view_data_suggest : this.data_suggest})
-        }
-    }
-
     is_valid(){
         var is_valid = true
         var nextState = { is_show_required_err: false, is_show_email_valid_err: false }
@@ -537,20 +276,6 @@ class FormControl extends Component {
         if (this.state.is_required) {
             if (this.state.input_type === 'date') {
                 return true
-            }
-
-            if (this.state.input_type === 'select') {
-
-                if (this.state.is_select_multiple) {
-                    is_valid = this.data_selected.length > 0
-                }else{
-                    is_valid = this.data_selected !== null
-                }
-
-                if (!is_valid) {
-                    nextState.is_show_required_err = true
-                }
-
             }
 
             if (this.state.input_type === 'text' || this.state.input_type === 'password' || this.state.input_type === 'textarea' ) {
@@ -741,237 +466,6 @@ class FormControl extends Component {
     handle_select_change = (selected_data, e) => {
     }
 
-    handle_suggest_click = (text, _data) => {
-
-        this.setState(function(prevState, props){
-            if (!prevState.is_readonly) {
-                var new_value = text
-                var nextState = { 'is_show_suggest': false }
-
-                if (prevState.input_type === 'select') {
-                    if (prevState.is_select_multiple) {
-                        this.data_selected.push(_data)
-
-                        new_value = ''
-                        nextState.view_data_suggest = this.get_escaped_view_suggest()
-                    }else{
-                        this.data_selected = _data
-                    }
-                }
-                
-                nextState.input_value = new_value
-                if (this.state.onChange !== undefined) {
-                    this.state.onChange(nextState.input_value, this)
-                }
-                                
-                return nextState
-            }
-        })
-    }
-
-    handle_remove_item_seleted = (index) => {
-        this.setState(function (prevState) {
-            this.data_selected.splice(index, 1)
-
-            if (this.state.onChange !== undefined) {
-                this.state.onChange(this.data_selected, this)
-            }
-
-            return {
-                view_data_suggest: this.get_escaped_view_suggest()
-            }
-        })
-    }
-
-    handle_input_select_click = (e) => {
-        clearTimeout(this.input_blur_timeout)
-        this.input_component.current.focus()
-    }
-
-    handle_input_focus = (e) => {
-
-        clearTimeout(this.input_blur_timeout)
-
-        if (!this.state.is_readonly && (this.state.input_type === 'select' || this.state.input_show_suggest_on_focus)) {
-            this.setState(function (prevState) {
-                return { 
-                    is_show_suggest: true,
-                    view_data_suggest: prevState.is_select_multiple ? this.get_escaped_view_suggest() : this.data_suggest,
-                }
-            })
-        }
-
-        if (this.state.onFocus !== undefined) {
-            this.state.onFocus(this, e)
-        }
-    }
-
-    input_blur_timeout
-    handle_input_blur = (e) => {
-
-        let current_input_value = e.target.value
-
-        this.input_blur_timeout = setTimeout(() => {
-            this.setState(function (prevState) {
-                var nextState = { is_show_suggest: false }
-
-                if (prevState.input_type === 'select') {
-                    if (prevState.is_select_multiple) {
-
-                        if (prevState.onValueInserted !== undefined && this.state.input_value.length > 0) {
-                            prevState.onValueInserted(this, current_input_value)
-                        }
-
-                    }
-                    else if (this.data_selected.value !== undefined && this.data_selected.value.length !== 0){
-                        nextState.input_value = this.data_selected.label
-                    }
-                    
-                    nextState.is_show_required_err = false
-                }
-                return nextState
-            })
-        }, 500)
-
-        if (this.state.onBlur !== undefined) {
-            this.state.onBlur(this, e)
-        }
-    }
-
-    handle_input_click = (value) => {
-        if (this.state.input_type === 'checkbox') {
-            
-
-            this.setState(function(prevState, props){
-
-                var new_value = []
-                var should_insert = true
-
-                prevState.input_value.map((_value) => {
-                    if (_value !== value) {
-                        new_value.push(_value)
-                    }else{
-                        should_insert = false
-                    }
-                })
-
-                if (should_insert) {
-                    new_value.push(value)
-                }
-
-                if (this.state.onChange !== undefined) {
-                    this.state.onChange(new_value, this)
-                }
-                
-                return {
-                    input_value: new_value,
-                };
-            })
-        }
-
-        if (this.state.input_type === 'radio') {
-            
-
-            this.setState(function(prevState, props){
-
-                var new_value = []
-
-                new_value.push(value)
-
-                if (this.state.onChange !== undefined) {
-                    this.state.onChange(new_value, this)
-                }
-                
-                return {
-                    input_value: new_value,
-                };
-            })
-        }
-    }
-
-    dispatch_date_change(){
-        if (this.state.onChange !== undefined) {
-            this.state.onChange(this.get_input_value(), this)
-        }
-    }
-
-    handle_date_input_change = (value) => {
-        this.date_value.date = parseInt(value)
-        this.dispatch_date_change()
-    }
-
-    handle_month_input_change = (value, obj) => {
-        this.date_value.month = obj.get_input_value()
-
-        //Vérification de validité des fin de mois
-        var valide_date_mouth = this.get_date_mouth_valid()
-        var max_date = valide_date_mouth[this.date_value.month]
-        if (this.date_value.date > max_date) {
-            this.date_value.date = max_date
-            this.input_date.current.set_value(this.date_value.date)
-        }
-
-        this.input_date.current.set_max_value(max_date)
-        this.dispatch_date_change()
-    }
-
-    handle_year_input_change = (value) => {
-        this.date_value.year = parseInt(value)
-        this.dispatch_date_change()
-    }
-
-    handle_hour_input_change = (value) => {
-        this.date_value.hour = parseInt(value)
-        this.dispatch_date_change()
-    }
-
-    handle_hour_minute_change = (value) => {
-        this.date_value.minute = parseInt(value)
-        this.dispatch_date_change()
-    }
-
-    handle_button_edit_click = (e) => {
-
-        this.setState(function (prevState) {
-
-            if (!prevState.is_readonly && this.state.onEdited !== undefined) {
-                this.state.onEdited(this)
-            }
-
-            if (prevState.is_readonly && this.state.onEdit !== undefined) {
-                this.state.onEdit(this)
-            }
-
-            if (prevState.is_readonly) {
-                setTimeout(() => {
-                    if (this.input_component.current !== null) {
-                        this.input_component.current.focus()
-                    }
-
-                    if (this.textarea_component.current !== null) {
-                        this.textarea_component.current.focus()
-                    }
-                }, 200)
-            }
-
-            return {
-                is_readonly: !prevState.is_readonly
-            }
-        })
-    }
-
-    handle_button_add_click = (e) => {
-        if (this.state.onButtonAddClick !== undefined) {
-            this.state.onButtonAddClick(this, e)
-        }
-    }
-
-    handle_paste = (e) => {
-        if (this.onPaste !== undefined) {
-            this.onPaste(e, this)
-        }
-    }
-
     handle_wagon_mouse_down = (e) => {
         this.prev_pointer_coord = {pageX : e.pageX, pageY: e.pageY, value: this.state.input_value}
         this.actual_action = 'wagon_mouse_down'
@@ -1049,42 +543,6 @@ class FormControl extends Component {
         })
     }
 
-    handle_numeric_btn_cmd_click = (direction, e) => {
-        this.setState(function (prevState) {
-            var new_value = parseInt(prevState.input_value)
-
-            if (direction === 'up') {
-                new_value = new_value + 1
-            }
-
-            if (direction === 'down') {
-                new_value = new_value - 1
-            }
-
-            if (this.state.onChange !== undefined) {
-                this.state.onChange(new_value, this)
-            }
-
-            return {
-                input_value: new_value
-            }
-        })
-    }
-
-    handle_well_moved = (e) => {
-        if (this.state.input_type === 'numeric') {
-            var variation = parseInt(e.deltaY)
-
-            if (variation > 0) {
-                this.handle_numeric_btn_cmd_click('down')
-            }
-
-            if (variation < 0) {
-                this.handle_numeric_btn_cmd_click('up')
-            }
-        }
-    }
-
     get_scaled_value(value){
         var new_value = 0
         var should_continue = true
@@ -1099,62 +557,6 @@ class FormControl extends Component {
 
     load_input_form(){
 
-    }
-
-    add_option(new_value, force_selected){
-        this.setState(function (prevState) {
-            this.data_suggest.push(new_value)
-
-            var next_input_value = prevState.input_value
-            if (force_selected && !prevState.is_select_multiple) {
-                this.data_selected = new_value
-                next_input_value = new_value.label
-            }
-
-            if (force_selected && prevState.is_select_multiple) {
-                this.data_selected.push(new_value)
-                next_input_value = ''
-            }
-
-            return {
-                view_data_suggest: this.data_suggest,
-                input_value: next_input_value,
-            }
-        })
-    }
-
-    insert_value(value){
-        this.setState(function (prevState) {
-            
-            
-
-            var new_value = ''
-
-            if (this.state.input_type === 'text') {
-                var str_1 = prevState.input_value.substring(0, this.input_component.current.selectionStart)
-                var str_2 = prevState.input_value.substring(this.input_component.current.selectionEnd, prevState.input_value.length)
-
-                new_value = str_1 + value + str_2
-            }
-
-            if (this.state.input_type === 'textarea') {
-                var str_1 = prevState.input_value.substring(0, this.textarea_component.current.selectionStart)
-                var str_2 = prevState.input_value.substring(this.textarea_component.current.selectionEnd, prevState.input_value.length)
-
-                new_value = str_1 + value + str_2
-            }
-
-            if (this.state.onChange !== undefined) {
-                this.state.onChange(new_value, this)
-            }
-
-            this.focus()
-
-            return {
-                input_value: new_value
-            }
-
-        })
     }
 
     focus(){
@@ -1578,183 +980,32 @@ class FormControl extends Component {
             )
         }
 
-        if (input_type === 'textarea') {
-            var text_dimension = Utils.get_text_size(input_value.length > 0 ? input_value : '|', '14px', Utils.get_width(this.textarea_component.current) + 'px')
-            var textarea_style = {}
-            if (is_autosize) {
-                textarea_style.height = text_dimension.height + 18
-            }
-
-            return (
-                <div className={"form-control-container " + className }>
-                    {
-                        label.length > 0 &&
-                        <label htmlFor={input_id}>
-                            {label} 
-                            {
-                                is_required &&
-                                <span className="text-danger" style={{ marginLeft: '5px' }}>*</span>
-                            }
-                            {
-                            (is_readonly !== undefined && is_editable && can_show_btn_edit_partial) &&
-                                <ButtonEditPartial 
-                                    is_edited={is_readonly}
-                                    onClick={this.handle_button_edit_click}
-                                    />
-                            }
-                        </label>
-                    }
-                    <textarea 
-                        type={type} 
-                        id={input_id} 
-                        name={input_name} 
-                        className={"form-control " + input_class} 
-                        onChange={this.handle_input_change} 
-                        onKeyDown={this.handle_input_key_down}
-                        onFocus={this.handle_input_focus}
-                        onBlur={this.handle_input_blur}
-                        onPaste={ this.handle_paste }
-                        readOnly={is_readonly}
-                        placeholder={input_placeholder} 
-                        style={ textarea_style }
-                        ref={this.textarea_component}
-                        value={input_value} />
-                    {
-                        (is_readonly !== undefined && is_editable && label.length === 0 && can_show_btn_edit_partial) &&
-                        <ButtonEditPartial 
-                            className="absolute right"
-                            is_edited={is_readonly}
-                            onClick={this.handle_button_edit_click}
-                            />
-                    }
-                    {
-                        (is_required && is_show_required_err) && 
-                        <span className="text-danger text-message">{required_err}</span>
-                    }
-
-                    {
-                        (input_ponctual_error.length > 0) && 
-                        <span className="text-danger text-message">{input_ponctual_error}</span>
-                    }
-
-                    {
-                        input_tooltip_info &&
-                        <Tooltip text={input_tooltip_info}>
-                            <button><i className="fa fa-info-circle"></i></button>
-                        </Tooltip>
-                    }
-
-                    {
-                        (is_show_suggest && view_data_suggest !== undefined) &&
-                        <ul className="form-suggest" ref={this.suggest_container}>
-                            {
-                                view_data_suggest.map((data, index) => (
-                                    data.label.toLowerCase().includes(text_suggest.toLowerCase()) &&
-                                    <li key={index}>
-                                        <a className={ index == index_suggest ? 'active' : '' } onClick={() => this.handle_suggest_click(data.label, data)} > { data.label }</a>
-                                    </li>
-                                ))
-                            }
-                        </ul>
-                    }
-                </div>
-            )
-        }
-
         return (
-            <div className={"form-control-container " + className }>
-                {
-                    label.length > 0 &&
-                    <label htmlFor={input_id}>
-                        {label} 
-                        {
-                            is_required &&
-                            <span className="text-danger" style={{ marginLeft: '5px' }}>*</span>
-                        }
-
-                        {
-                            (is_readonly !== undefined && is_editable && can_show_btn_edit_partial) &&
-                            <ButtonEditPartial 
-                                is_edited={is_readonly}
-                                onClick={this.handle_button_edit_click}
-                                />
-                        }
-                    </label>
-                }
-                <input 
-                    type={type} 
-                    id={input_id} 
-                    name={input_name} 
-                    className={"form-control " + input_class} 
-                    onChange={this.handle_input_change} 
-                    onKeyDown={this.handle_input_key_down}
-                    onFocus={this.handle_input_focus}
-                    onBlur={this.handle_input_blur}
-                    onPaste={ this.handle_paste }
-                    onWheel={ this.handle_well_moved }
-                    readOnly={is_readonly}
-                    placeholder={input_placeholder} 
-                    ref={this.input_component}
-                    autoComplete={((input_autocomplete && input_suggest === undefined) || input_suggest.length === 0) ? '' : 'off'}
-                    value={input_value} />
-
-                {
-                    input_type === 'numeric' &&
-                    <div>
-                        <button type="button" onMouseDown={ (e) => this.handle_numeric_btn_cmd_click('up', e) } className="btn-cmd btn-cmd-up"><i className="fa fa-chevron-up"></i></button>
-                        <button type="button" onMouseDown={ (e) => this.handle_numeric_btn_cmd_click('down', e) } className="btn-cmd btn-cmd-down"><i className="fa fa-chevron-down"></i></button>
-                    </div>
-                }
-                {
-                    (is_readonly !== undefined && is_editable && label.length === 0 && can_show_btn_edit_partial) &&
-                    <ButtonEditPartial 
-                        className="absolute right"
-                        is_edited={is_readonly}
-                        onClick={this.handle_button_edit_click}
-                        />
-                }
-                {
-                    (is_required && is_show_required_err) && 
-                    <span className="text-danger text-message">{required_err}</span>
-                }
-
-                {
-                    (input_ponctual_error.length > 0) && 
-                    <span className="text-danger text-message">{input_ponctual_error}</span>
-                }
-
-                {
-                    input_tooltip_info &&
-                    <Tooltip text={input_tooltip_info}>
-                        <button><i className="fa fa-info-circle"></i></button>
-                    </Tooltip>
-                }
-
-                {
-                    (!is_readonly && is_show_suggest && view_data_suggest !== undefined) &&
-                    <ul className="form-suggest" ref={this.suggest_container}>
-                        {
-                            view_data_suggest.map((data, index) => (
-                                data.label.toLowerCase().includes(text_suggest.toLowerCase()) &&
-                                <li key={index}>
-                                    <a className={ index == index_suggest ? 'active' : '' } onClick={() => this.handle_suggest_click(data.label, data)} > { data.label }</a>
-                                </li>
-                            ))
-                        }
-                    </ul>
-                }
-
-                {
-                    can_add_partial &&
-                    <ButtonAddPartial 
-                        className="absolute right"
-                        onClick={this.handle_button_add_click}
-                        />
-                }
-
-                
-            </div>
+            <div></div>
         )
+    }
+
+    static serialize_form(form_list){
+        var result = {}
+        var should_submit = true
+
+        form_list.map((form) => {
+            if (form !== undefined) {
+                if (form.is_valid()) {
+                    var val = form.get_input_value()
+                    if (val !== undefined) {
+                        result[form.get_input_name()] = val
+                    }
+                }else{
+                    should_submit = false
+                }
+            }
+        })
+
+        return {
+            should_submit,
+            result
+        }
     }
 }
 
