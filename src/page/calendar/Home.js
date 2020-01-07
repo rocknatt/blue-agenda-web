@@ -1,11 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Dropdown, Modal } from 'mzara-component'
+import { DateHelper } from 'mzara-library'
 
 import SkyCalendar from '../../component/calendar/index'
-import Dropdown from '../../component/Dropdown'
-import Modal from '../../component/modal/Modal'
-
-import DateHelper from '../../helper/date_helper'
 
 import BookingCreateForm from './widget/BookingCreateForm'
 
@@ -71,11 +69,19 @@ class Home extends Component {
             hour,
             is_add_new_booking, 
         } = this.state
+
+        const date_item_list = [
+            { title: 'New booking 1', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/08', hour_begin: '09:30', hour_end: '10:15' },
+            { title: 'New booking 2', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/10', hour_begin: '09:30', hour_end: '10:15' },
+            { title: 'New booking 3', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/13', hour_begin: '09:30', hour_end: '10:15' },
+            { title: 'New booking 4', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/13', hour_begin: '09:30', hour_end: '10:15' },
+        ]
         
         return (
             <div className="">
                 <SkyCalendar 
                     cell_menu_list={this.get_cell_menu_list()}
+                    item_list={date_item_list}
                     lang={this.props.lang}
                     onCellMenuClick={this.handle_calendar_cell_menu_click}
                     />

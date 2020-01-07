@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 
-import Dropdown from '../../component/Dropdown'
 import Utils from '../../Utils/Utils'
+
+import { Dropdown } from 'mzara-component'
 
 // import NotificationPartial from '../notification/Partial'
 // import ChatPartial from '../chat/widget/MenuPartial'

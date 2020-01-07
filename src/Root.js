@@ -2,16 +2,13 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Ajax, Hub, Lang } from 'mzara-library'
 import { Chat, UserRip } from 'mzara-controller'
+import { Alert, Modal } from 'mzara-component'
 
 import Navigation from './navigation/Navigation'
 import Navbar from './page/navbar/Main'
 import Utils from './Utils/Utils'
 
 import Spinner from './component/Spinner'
-import Notify from './component/Notify'
-import Alert from './component/Alert'
-
-import Modal from './component/modal/Modal'
 
 // Chargement des fichier css
 import './assets/css/dropdown.css'

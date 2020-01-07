@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 
-import Utils from '../../Utils/Utils'
+// import DateHelper from '../../helper/date_helper'
+import { DateHelper, Utils } from 'mzara-library'
+import { Dropdown } from 'mzara-component'
 
-import DateHelper from '../../helper/date_helper'
-import Dropdown from '../../component/Dropdown'
+import Item from './item'
 
 class Table extends Component {
 
@@ -15,7 +16,8 @@ class Table extends Component {
             month: props.month,
             year: props.year,
             layout: props.layout === undefined ? 'month' : props.layout,
-            menu_list: props.cell_menu_list
+            menu_list: props.cell_menu_list,
+            item_list: props.item_list,
         }
 
         //Todo : 
@@ -40,6 +42,7 @@ class Table extends Component {
             month: nextProps.month, 
             year: nextProps.year,
             layout: nextProps.layout,
+            item_list: nextProps.item_list,
         })
     }
 
@@ -201,6 +204,27 @@ class Table extends Component {
         return str
     }
 
+    get_item_list(year, month){
+        let result = []
+
+        this.state.item_list.map((item, index) => {
+            const _date = new Date(item.date)
+            if (
+                _date.getFullYear() === year && 
+                (month === undefined || (month !== undefined && _date.getMonth() === month))
+                    ) {
+                let _item = Utils.get_clone(item)
+                _item.date = _date.getDate()
+                _item.month = _date.getMonth()
+                _item.year = year
+
+                result.push(_item)
+            }
+        })
+
+        return result
+    }
+
     has_date(day, month, year){
         const date_nb = DateHelper.get_days_in_mounth(month, year)
 
@@ -301,6 +325,7 @@ class Table extends Component {
         if (layout === 'month') {
 
             const week_list = this.get_day_list(month, year)
+            const item_list = this.get_item_list(year, month)
 
             return (
                 <table className="calendar calendar-month">
@@ -327,6 +352,18 @@ class Table extends Component {
 
                                                 { this.render_menu_list(menu_list, (<span className="text">{ _day.day }</span>), { day: _day.day, month: _day.month + 1, year: _day.year }, true) }
                                                 
+                                                {
+                                                    item_list.map((item) => (
+                                                        (item.date === _day.day) &&
+                                                        <Item
+                                                            title={item.title}
+                                                            description={item.description}
+                                                            hour_begin={item.hour_begin}
+                                                            hour_end={item.hour_end}
+                                                            />
+                                                    ))
+                                                }
+
                                             </td>
                                         ))
                                     }
@@ -343,7 +380,8 @@ class Table extends Component {
 
             const month_list = this.get_month_list()
             const date_list = this.get_day_list_canevas()
-
+            const item_list = this.get_item_list(year)
+            
             return (
                 <table className="calendar calendar-year">
                     <tbody>
@@ -368,6 +406,19 @@ class Table extends Component {
                                                 ((day_canevas === state_now.day && month_index === state_now.month) ? 'now' : '') }>
 
                                                 { this.render_menu_list(menu_list, '', { day: day_canevas, month: month_index + 1, year: year }, true) }
+
+                                                {
+                                                    item_list.map((item) => (
+                                                        (item.date == day_canevas && item.month == month_index) &&
+                                                        <Item
+                                                            title={item.title}
+                                                            description={item.description}
+                                                            hour_begin={item.hour_begin}
+                                                            hour_end={item.hour_end}
+                                                            show_description={false}
+                                                            />
+                                                    ))
+                                                }
 
                                             </td>
                                         ))

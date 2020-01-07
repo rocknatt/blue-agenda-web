@@ -2,9 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 
 import Calendar from './calendar'
-import Dropdown from '../../component/Dropdown'
-
-import DateHelper from '../../helper/date_helper'
+import { DateHelper } from 'mzara-library'
+import { Dropdown } from 'mzara-component'
 
 import './css/calendar.css'
 
@@ -34,11 +33,14 @@ class Layout extends Component {
             calendar_layout: 'month',
             last_calendar_layout: 'month',
             cell_menu_list: props.cell_menu_list,
+            item_list: props.item_list,
         }
     }
 
     componentWillReceiveProps(nextProps){
-
+        this.setState({
+            item_list: nextProps.item_list
+        })
     }
 
     componentWillMount(){
@@ -270,6 +272,7 @@ class Layout extends Component {
             month,
             year,
             calendar_layout,
+            item_list,
             cell_menu_list,
         } = this.state
 
@@ -394,6 +397,7 @@ class Layout extends Component {
                         month={month}
                         year={year}
                         layout={calendar_layout}
+                        item_list={item_list}
                         cell_menu_list={cell_menu_list}
                         onCellMenuClick={this.handle_calendar_cell_menu_click}
                         />

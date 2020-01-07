@@ -5,9 +5,9 @@
   "dependencies": {
     "lodash.shuffle": "^4.2.0",
     "moment": "^2.22.2",
-    "mzara-component": "^1.0.8",
+    "mzara-component": "^1.0.12",
     "mzara-controller": "^1.0.4",
-    "mzara-library": "^1.0.8",
+    "mzara-library": "^1.0.13",
     "prop-types": "^15.6.1",
     "react": "^16.3.2",
     "react-clipboard-polyfill": "^1.1.0",

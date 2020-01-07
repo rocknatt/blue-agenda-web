@@ -56,9 +56,13 @@
 }
 .calendar-month tr td{
 	position: relative;
-	padding: 40px;
+	padding: 40px 10px;
+	padding-top: 40px;
+	padding-bottom: 20px;
 	border: 1px solid #bbb;
 	cursor: pointer;
+	max-width: 200px;
+	width: 200px;
 }
 .calendar-month tr td.now{
 	background-color: #bbb;
@@ -114,6 +118,9 @@
 .calendar-year tr td.week-end{
 	background-color: #d7fdeb;
 }
+.calendar-year tr td:not(.calendar-date){
+	min-width: 240px;
+}
 
 /*Hours*/
 .calendar-hours{
@@ -129,4 +136,29 @@
 	padding: 10px 20px;
 	border: 1px solid #bbb;
 	cursor: pointer;
+}
+
+/*Item*/
+.calendar-item{
+	overflow: hidden;
+	max-width: 180px;
+	background-color: #ddd;
+	padding: 10px;
+	margin-top: 5px;
+}
+.calendar-item h3{
+	font-family: 'Hind Bold';
+	font-size: 14px;
+	margin-bottom: 0px;
+}
+.calendar-item p{
+	font-size: 12px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	margin-bottom: 0;
+	overflow: hidden;
+}
+
+.calendar-year .calendar-item{
+	max-width: 240px;
 }

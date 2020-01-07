@@ -265,12 +265,12 @@ class DateTimeIndicator extends Component {
 
         if (is_date_span) {
             return (
-                <span className={ 'date-time-span ' + className} title={ view_date_value }>{ date_span }</span>
+                <span className={ 'date-time-span ' + className } title={ view_date_value }>{ date_span }</span>
             )
         }
 
         return (
-            <span className={ 'date-time-span ' + className} title={ this.get_simple_date_time_span(date_time_value) }>{ view_date_value }</span>
+            <span className={ 'date-time-span ' + className } title={ this.get_simple_date_time_span(date_time_value) }>{ view_date_value }</span>
         )
     }
 }

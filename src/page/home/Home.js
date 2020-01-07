@@ -2,10 +2,10 @@ import React, { Component } from 'react'
 
 import Utils from '../../Utils/Utils'
 
+import { Alert, FormControl } from 'mzara-component'
+
 import Spinner from '../../component/Spinner'
 import ButtonSpinner from '../../component/btn/ButtonSpinner'
-import Alert from '../../component/Alert'
-import FormControl from '../../component/FormControl'
 
 class _Home extends Component {
     state = {
