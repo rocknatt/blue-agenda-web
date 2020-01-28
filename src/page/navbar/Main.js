@@ -30,6 +30,7 @@ class Main extends Component {
             event_badge: 4,
             notification_badge: 23,
             user: props.user,
+            menu_drop_toggle_list: [],
         }
 
         this.parent = props.parent
@@ -96,6 +97,41 @@ class Main extends Component {
         this.setState(function (prevState) {
             return {
                 is_active: !prevState.is_active,
+            }
+        })
+    }
+
+    handle_login_click = (e) => {
+        e.preventDefault()
+        this.props.navigation.parent.load_login()
+    }
+
+    handle_logout_click = (e) => {
+        e.preventDefault()
+        this.props.ajax.get_json('user/logout', {}, () => {
+            this.props.navigation.reload()
+        })
+    }
+
+    handle_menu_dropdown_click = (name, e) => {
+        e.preventDefault()
+        this.setState(function (prevState) {
+            let adr = Utils.get_clone(prevState.menu_drop_toggle_list)
+            let index_catched = null
+            adr.map((value, index) => {
+                if (value === name) {
+                    index_catched = index
+                }
+            })
+
+            if (index_catched === null) {
+                adr.push(name)
+            }else{
+                adr.splice(index_catched, 1)
+            }
+
+            return {
+                menu_drop_toggle_list: adr
             }
         })
     }
@@ -249,18 +285,49 @@ class Main extends Component {
                                         <h3>{ user.nom }</h3>
                                     </a>
                                 </li>
-                                {
-                                    menu_list.map((menu, index) => (
-                                        <li key={index}>
-                                            <a href={Utils.site_url(menu.href)} className={ menu.className }>
-                                                <i className={"fa " + menu.icon}></i> 
-                                                { this.props.lang.line(menu.lang) }
-                                            </a>
-                                        </li>
-                                    ))
-                                }
                                 
                             </ul>
+
+                            {
+                                menu_list.map((_group_menu, index) => (
+                                <ul key={index}>
+                                    <li className="nav-heading"><span>{ this.props.lang.line(_group_menu.lang) }</span></li>
+                                    {
+                                        _group_menu.menu_list.map((_menu, menu_index) => (
+                                            <li key={menu_index} className={"drop-toggle"}>
+                                                <a href={this.props.ajax.site_url(_menu.href)} className={ _menu.className } onClick={(e) => this.handle_menu_dropdown_click(_menu.name, e)}>
+                                                    <i className={"fa " + _menu.icon}></i> 
+                                                    { this.props.lang.line(_menu.lang) }
+                                                    {
+                                                        _menu.sub_menu_list !== undefined &&
+                                                        <i className={"fa fa-chevron-down fa-dropdown-icon"}></i> 
+                                                    }
+
+                                                    <span className="badge">3</span>
+                                                </a>
+
+                                                {
+                                                    (_menu.sub_menu_list !== undefined && this.state.menu_drop_toggle_list.includes(_menu.name)) &&
+                                                    <ul className="animated animated-fast flipInX">
+                                                        {
+                                                            _menu.sub_menu_list.map((_sub_menu, sub_index) => (
+                                                                <li key={sub_index}>
+                                                                    <a href={this.props.ajax.site_url(_sub_menu.href)} className={ _sub_menu.className }>
+                                                                        <i className={"fa " + _sub_menu.icon}></i> 
+                                                                        { this.props.lang.line(_sub_menu.lang) }
+                                                                    </a>
+                                                                </li>
+                                                            ))
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        ))
+                                    }
+
+                                </ul>
+                                ))
+                            }
                         </div>
                     </div>
                 </div>
@@ -277,9 +344,27 @@ class Main extends Component {
     }
 }
 
+
 const menu_list = [
-    { href: 'home', className: '', icon: 'fa-home', lang: 'std_home' },
-    { href: 'calendar', className: '', icon: 'fa-calendar', lang: 'std_calendar' },
+    {
+        name: 'main', 
+        lang: 'std_main',
+        menu_list: [
+            { href: 'home', className: '', icon: 'fa-home', lang: 'std_home' },
+            { href: 'calendar', className: '', icon: 'fa-calendar', lang: 'std_calendar' },
+        ]
+    },
+    
+    {
+        name: 'param', 
+        lang: 'std_setting',
+        menu_list: [
+            { name: 'user', href: '#', className: '', icon: 'fa-users', lang: 'std_user', sub_menu_list: [
+                { href: 'account', className: '', lang: 'std_user_list' },
+                { href: 'role', className: '', lang: 'std_group' },
+            ] },
+        ]
+    }
 ]
 
 const mapStateToProps = (state) => {

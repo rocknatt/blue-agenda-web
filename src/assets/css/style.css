@@ -361,7 +361,7 @@ body{
 
 /*Navbar*/
 .navbar{
-	background-color: #000;
+	background-color: #004f84;
 }
 .navbar.navbar-fixed-top{
 	position: fixed;
@@ -1691,36 +1691,64 @@ img.img-profil.img-profil-sm{
 .filtre.filtre-menu .filtre-wapper{
 	padding: 0;
 }
-.filtre.filtre-menu ul{
+.filtre.filtre-menu .filtre-content > ul{
 	padding: 0;
 }
-.filtre.filtre-menu ul li{
-	
+.filtre.filtre-menu .filtre-content > ul li{
+	position: relative;
 }
-.filtre.filtre-menu ul li a{
-	font-size: 16px;
-	padding: 10px 20px;
-	padding-left: 30px;
+.filtre.filtre-menu .filtre-content > ul li a{
+	font-size: 14px;
+	padding: 10px 15px;
+	padding-right: 5px;
 }
-.filtre.filtre-menu ul li a i{
+.filtre.filtre-menu .filtre-content > ul li a i{
 	margin-right: 10px;
 }
-.filtre.filtre-menu ul li.main-menu a{
+.filtre.filtre-menu .filtre-content > ul li a i.fa-dropdown-icon{
+	float: right;
+	font-size: 12px;
+}
+.filtre.filtre-menu .filtre-content > ul li a .badge{
+	float: right;
+	margin-right: 10px;
+	padding: 6px;
+}
+.filtre.filtre-menu .filtre-content > ul li.main-menu a{
 	padding: 40px 10px;
 	background-color: #bbb;
 	color: #fff;
 }
-.filtre.filtre-menu ul li.main-menu h3{
+.filtre.filtre-menu .filtre-content > ul li.main-menu h3{
 	font-size: 18px;
 	font-family: 'Hind Bold';
 	color: #000;
 	margin-top: 20px;
 }
-.filtre.filtre-menu ul li.main-menu img{
+.filtre.filtre-menu .filtre-content > ul li.main-menu img{
 	width: 64px;
 	height: 64px;
 	float: left;
 }
+.filtre.filtre-menu .filtre-content > ul li.nav-heading{
+	font-size: 12px;
+	font-family: 'Hind Medium';
+	padding-left: 15px;
+	padding-bottom: 5px;
+	color: #555;
+}
+.filtre.filtre-menu .filtre-content > ul li > ul{
+	padding: 0;
+	padding-left: 15px;
+	background-color: #eee;
+}
+.filtre.filtre-menu .filtre-content > ul li > ul li a{
+	padding: 10px 15px;
+	padding-left: 0px;
+	font-size: 12px;
+}
+
+
 .filtre.filtre-menu .logo-menu{
 	text-align: center;
 	padding: 10px 0px;
@@ -1729,7 +1757,6 @@ img.img-profil.img-profil-sm{
 	width: auto;
 	height: 48px;
 }
-
 
 /*Todo : make animation for background here*/
 .place-indicator{

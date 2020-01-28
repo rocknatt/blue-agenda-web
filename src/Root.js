@@ -12,6 +12,7 @@ import Spinner from './component/Spinner'
 // import Login from './page/user/Login'
 
 import Config from './config/app'
+import Lang_fr from './lang/fr'
 
 // Chargement des fichier css
 import './assets/css/dropdown.css'
@@ -99,15 +100,25 @@ class Root extends Component {
             ajax: this.ajax,
             url:  'lang',
             callback: (obj) => {
-                const action = { type: 'INIT_LANG', lang: obj }
-                this.props.dispatch(action)
+                // const action = { type: 'INIT_LANG', lang: obj }
+                // this.props.dispatch(action)
                 
-                if (callback !== undefined) {
-                    callback()
-                }
+                // if (callback !== undefined) {
+                //     callback()
+                // }
             },
         })
+
+        //exception dev
+        this.lang.set_lang(Lang_fr)
+        const action = { type: 'INIT_LANG', lang: this.lang }
+        this.props.dispatch(action)
         
+        if (callback !== undefined) {
+            callback()
+        }
+
+
     }
 
     init_user(callback){
