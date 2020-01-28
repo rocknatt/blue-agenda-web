@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
-
-import Utils from '../Utils/Utils'
 import { connect } from 'react-redux'
+import { DOMHelper, Utils } from 'mzara-library'
 
 import Home from '../page/home/Main'
 import Calendar from '../page/calendar/Main'
@@ -24,12 +23,9 @@ class Navigation extends Component {
     animation_interval = null
 
     render_first_list = [
+        'calendar',
         'calendar/',
     ]
-
-    love_event_list = []
-    image_cached_list = []
-    request_cache_list = []
 
     left_menu_change_callback_list = []
 
@@ -62,22 +58,17 @@ class Navigation extends Component {
     }
 
     componentDidMount(){
+        document.addEventListener('click', this.handle_link_click)
+        window.addEventListener('focus', this.handle_window_focus)
+        window.addEventListener('blur', this.handle_window_blur)
+        window.addEventListener('popstate', this.handle_pop_state_change)
 
         const action = { type: 'INIT_NAVIGATION', navigation: this }
         this.props.dispatch(action)
 
-        var src = document.getElementById('src')
-        var default_url = Utils.attr(src, 'sp-current-url')
-
-        this.load(default_url)
-
-        document.addEventListener('click', this.handle_link_click)
-        window.addEventListener('focus', this.handle_window_focus)
-        window.addEventListener('blur', this.handle_window_blur)
-
         //callback
         if (this.props.onNavigationMounted !== undefined) {
-            this.props.onNavigationMounted()
+            this.props.onNavigationMounted(this)
         }
         
     }
@@ -86,7 +77,7 @@ class Navigation extends Component {
         this.dispatch_left_menu_change_change(menu_list)
     }
 
-    //event
+//event
     add_event_listner(event_name, _function){
         if (event_name === undefined) {
             return false
@@ -141,7 +132,7 @@ class Navigation extends Component {
     }
 
     get_uri_param(str){
-        var str_1 = str.replace(Utils.base_url(), '')
+        var str_1 = str.replace(this.props.ajax.base_url, '')
 
         var adr = str_1.split('?')
         var query_string = adr[0]
@@ -152,8 +143,8 @@ class Navigation extends Component {
         adr_1.splice(0, 2)
 
         return {
-            page: adr[0] === undefined ? '' : adr[0],
-            method: adr[1] === undefined ? '' : adr[1],
+            page: adr[0],
+            method: adr[1],
             param: adr_1,
             uri: str,
             query_string: str_1,
@@ -161,14 +152,13 @@ class Navigation extends Component {
         }
     }
 
-    get_user_identity(){
-        return this.parent.user.get_user_identity()
-    }
-
-    load(uri){
+    load(uri, callback){
         var uri_param = this.get_uri_param(uri)
-        
-        if (this.render_first_list.includes(uri_param.page + '/' + uri_param.method)) {
+
+        if (this.render_first_list.includes(uri_param.page) ||
+            this.render_first_list.includes(uri_param.page + '/' + uri_param.method)) {
+            
+            this.save_history(uri)
             uri_param.remote_response = { id: uri_param.param[0] }
             this.setState(uri_param)
             return true
@@ -178,23 +168,39 @@ class Navigation extends Component {
             url: uri,
             type: 'GET',
             success: (response) => {
+
+                if (response === null) {
+                    return false;
+                }
+
                 if (response.redirect) {
                     this.load(response.redirect_url)
                 }
                 else{
+                    this.save_history(uri)
                     this.set_document_title(response.title)
                     uri_param.remote_response = response
                     this.setState(uri_param)
                 }
 
-                if (uri.includes('logout')) {
-                    this.parent.init_user()
-                }
+                // if (uri.includes('logout')) {
+                //     this.parent.init_user()
+                // }
             },
             error: (response) => {
                 //Afficher une erreur hors connexion
-            }
+            },
         })
+    }
+
+    save_history(uri){
+        if (this.props.Config.environment === 'production') {
+            window.history.pushState("", "", uri)
+        }
+    }
+
+    reload(){
+        window.location.reload()
     }
 
     handle_link_click = (e) => {
@@ -210,10 +216,10 @@ class Navigation extends Component {
 
         if (target.tagName === 'A') {
             
-            var uri = Utils.attr(target, 'href')
-            var _target = Utils.attr(target, 'target')
+            var uri = DOMHelper.attr(target, 'href')
+            var _target = DOMHelper.attr(target, 'target')
 
-            if (uri !== undefined && _target === undefined && !Utils.hasClass(target, 'noAjax')) {
+            if (uri !== undefined && _target === undefined && !DOMHelper.hasClass(target, 'noAjax')) {
                 e.preventDefault()
                 this.load(uri)
             }
@@ -221,29 +227,12 @@ class Navigation extends Component {
         }
     }
 
+    handle_pop_state_change = (e) => {
+        e.preventDefault()
+        this.load(window.location.href)
+    }
+
 //Rip live
-    set_chat_count(str) {
-        if (str.length == 0 || str === ' ' ) {
-            this.parent.navbar.current.set_chat_badge(0)
-        }else{
-            this.parent.navbar.current.set_chat_badge(str)
-        }
-    }
-
-    reset_chat_count() {
-        this.set_chat_count('')
-
-        Utils.ajax({
-            url: Utils.site_url('hub/reset_chat_rip'),
-            type: 'GET',
-            data_type: 'json',
-            success: (response) => {
-                if (response.ok) {
-
-                }
-            }
-        })
-    }
    
     title_animation(message) {
         this.last_title = document.title
@@ -266,6 +255,41 @@ class Navigation extends Component {
         this.animation_interval = setInterval(this.title_animation, 6000, str)
     }
 
+    show_external_notif(titre, message, icon, url, tag) {
+        if (typeof Notification === undefined) {
+            return false;
+        }
+
+        var options={
+            "lang": "FR", 
+            "icon": icon, 
+            "tag": tag, 
+            "body": message,
+            '_url': url,
+            'html': true,
+        };
+
+        /* Tester si la permission a déjà été donnée */
+        if (Notification.permission=="granted") {
+            this.show_notif(titre, options);
+        } else {
+            Notification.requestPermission((result) => {
+                if (result=="granted") {
+                    this.show_notif(titre, options);
+                }
+            });
+        }
+    }
+
+    show_notif(titre, options) {
+        var notif = new Notification(titre, options);
+
+        notif.onclick = (event) => {
+            event.preventDefault();
+            window.open(options._url, "_blank");
+        }
+    }
+
     init_rip(){
         Utils.ajax({
             url: Utils.site_url('hub/get_user_rip'),
@@ -277,6 +301,21 @@ class Navigation extends Component {
                 }
             }
         })
+    }
+
+    handle_window_focus = (e) => {
+        this.is_document_focus = true
+        if (this.animation_interval !== null) {
+           this.stop_title_animation() 
+        }
+    }
+
+    handle_window_blur = (e) => {
+        this.is_document_focus = true
+    }
+
+    share(obj){
+        this.parent.share_component.current.show_modal(obj)
     }
 
     render() {

@@ -59,7 +59,10 @@ class Item extends Component {
 
         return (
             <div 
-                className="calendar-item">
+                className="calendar-item"
+                draggable
+                onClick={this.props.onClick}
+                onDragStart={this.props.onDragStart}>
                 <h3 title={ hour_begin + ' - ' + hour_end + '. ' + description }>{title}</h3>
                 {
                     show_description &&

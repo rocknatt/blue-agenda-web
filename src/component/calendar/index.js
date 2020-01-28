@@ -197,7 +197,7 @@ class Layout extends Component {
                         calendar_layout: 'hour',
                         last_calendar_layout: prevState.calendar_layout, 
                         day: data.day, 
-                        month: data.month, 
+                        month: data.month - 1, 
                         year: data.year
 
                     }
@@ -400,6 +400,8 @@ class Layout extends Component {
                         item_list={item_list}
                         cell_menu_list={cell_menu_list}
                         onCellMenuClick={this.handle_calendar_cell_menu_click}
+                        onItemClick={this.props.onItemClick}
+                        onDrop={this.props.onDrop}
                         />
                 </div>
                 <div className="sky-footer">

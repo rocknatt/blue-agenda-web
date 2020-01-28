@@ -6,7 +6,7 @@ import { Dropdown } from 'mzara-component'
 
 import Item from './item'
 
-class Table extends Component {
+class Calendar extends Component {
 
     constructor(props){
         super(props)
@@ -204,25 +204,47 @@ class Table extends Component {
         return str
     }
 
-    get_item_list(year, month){
+    get_hour(str){
+        let adr = str.split(':')
+
+        return {
+            hour: parseInt(adr[0]),
+            minute: parseInt(adr[1]),
+            second: parseInt(adr[2])
+        }
+    }
+
+    get_item_list(year, month, date){
         let result = []
 
         this.state.item_list.map((item, index) => {
             const _date = new Date(item.date)
             if (
                 _date.getFullYear() === year && 
-                (month === undefined || (month !== undefined && _date.getMonth() === month))
+                (month === undefined || (month !== undefined && _date.getMonth() === month)) &&
+                (date === undefined || (date !== undefined && _date.getDate() === date))
                     ) {
                 let _item = Utils.get_clone(item)
+                _item.date_str = _item.date
                 _item.date = _date.getDate()
                 _item.month = _date.getMonth()
                 _item.year = year
+                _item._hour_begin = this.get_hour(item.hour_begin)
+                _item._hour_end = this.get_hour(item.hour_end)
 
                 result.push(_item)
             }
         })
 
         return result
+    }
+
+    get_view_hour(i){
+        var str = i.toString()
+        if (str.length === 1) {
+            str = '0' + str
+        }
+        return str
     }
 
     has_date(day, month, year){
@@ -234,12 +256,12 @@ class Table extends Component {
     handle_cell_click(data, e){
 
         //Todo : check if target is cell or item
-        if (e.target.TagName === 'TD') {
-            //trigger on_cell_click props
-            if (this.props.onCellClick !== undefined) {
-                this.props.onCellClick(data, e)
-            }
-        }
+        // if (e.target.TagName === 'TD') {
+        //     //trigger on_cell_click props
+        //     if (this.props.onCellClick !== undefined) {
+        //         this.props.onCellClick(data, e)
+        //     }
+        // }
     }
 
     handle_cell_menu_click(label, data){
@@ -250,6 +272,36 @@ class Table extends Component {
 
             this.props.onCellMenuClick(label, data)
         }
+    }
+
+    handle_drag_start = (e, item) => {
+        let data = {
+            type: 'calendar_item',
+            data: item,
+        }
+
+        e.dataTransfer.setData('text/plain', JSON.stringify(data))
+    }
+
+    handle_drop = (e, current_date) => {
+        e.preventDefault()
+        let data = e.dataTransfer.getData('text/plain')
+        data = Utils.try_parse_json(data)
+
+        if (data.type === 'calendar_item') {
+            let _data = data.data
+            _data.date = this.get_compiled_date(current_date)
+            if (current_date.hour !== undefined) {
+                //Todo : evaluate time duration
+                // data.
+            }
+
+            this.props.onDrop(_data)
+        }
+    }
+
+    handle_drag_over = (e) => {
+        e.preventDefault()
     }
 
     is_week_end(day, month, year){
@@ -328,51 +380,57 @@ class Table extends Component {
             const item_list = this.get_item_list(year, month)
 
             return (
-                <table className="calendar calendar-month">
-                    <tbody>
-                        <tr className="calendar-header">
-                            <td>{ this.props.lang.line('std_lun') }</td>
-                            <td>{ this.props.lang.line('std_mar') }</td>
-                            <td>{ this.props.lang.line('std_mer') }</td>
-                            <td>{ this.props.lang.line('std_jeu') }</td>
-                            <td>{ this.props.lang.line('std_ven') }</td>
-                            <td>{ this.props.lang.line('std_sam') }</td>
-                            <td>{ this.props.lang.line('std_dim') }</td>
-                        </tr>
+                <div className="calendar calendar-month">
+                    <div>
+                        <div className="calendar-row calendar-header">
+                            <div className="calendar-col">{ this.props.lang.line('std_lun') }</div>
+                            <div className="calendar-col">{ this.props.lang.line('std_mar') }</div>
+                            <div className="calendar-col">{ this.props.lang.line('std_mer') }</div>
+                            <div className="calendar-col">{ this.props.lang.line('std_jeu') }</div>
+                            <div className="calendar-col">{ this.props.lang.line('std_ven') }</div>
+                            <div className="calendar-col">{ this.props.lang.line('std_sam') }</div>
+                            <div className="calendar-col">{ this.props.lang.line('std_dim') }</div>
+                        </div>
                         {
                             week_list.map((day_list, row_index) => (
-                                <tr key={row_index}>
+                                <div className="calendar-row" key={row_index}>
                                     {
                                         day_list.map((_day, day_index) => (
-                                            <td key={day_index} className={ 
+                                            <div key={day_index} className={ 
+                                                "calendar-col " +
                                                 (_day.is_not_active ? '' : 'active') + ' ' + 
                                                 ((_day.day === day && _day.month === month && _day.year === year) ? 'selected' : '') + ' ' +
                                                 ((_day.day === state_now.day && _day.month === state_now.month && _day.year === state_now.year) ? 'now' : '') }
-                                                onClick={(e) => this.handle_cell_click({ day: _day.day, month: _day.month + 1, year: _day.year }, e)}>
+                                                onClick={(e) => this.handle_cell_click({ day: _day.day, month: _day.month + 1, year: _day.year }, e)}
+                                                onDragOver={(e) => this.handle_drag_over(e)}
+                                                onDrop={(e) => this.handle_drop(e, { day: _day.day, month: _day.month + 1, year: _day.year })}>
 
                                                 { this.render_menu_list(menu_list, (<span className="text">{ _day.day }</span>), { day: _day.day, month: _day.month + 1, year: _day.year }, true) }
                                                 
                                                 {
-                                                    item_list.map((item) => (
+                                                    item_list.map((item, item_index) => (
                                                         (item.date === _day.day) &&
                                                         <Item
+                                                            key={item_index}
                                                             title={item.title}
                                                             description={item.description}
                                                             hour_begin={item.hour_begin}
                                                             hour_end={item.hour_end}
+                                                            onClick={(e) => this.props.onItemClick(item, e) }
+                                                            onDragStart={(e) => this.handle_drag_start(e, item)}
                                                             />
                                                     ))
                                                 }
 
-                                            </td>
+                                            </div>
                                         ))
                                     }
-                                </tr>
+                                </div>
                             ) )
                         }
                         
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             )
         }
 
@@ -383,52 +441,59 @@ class Table extends Component {
             const item_list = this.get_item_list(year)
             
             return (
-                <table className="calendar calendar-year">
-                    <tbody>
-                        <tr className="calendar-header">
-                            <td className="calendar-date"></td>
+                <div className="calendar calendar-year">
+                    <div>
+                        <div className="calendar-row calendar-header">
+                            <div className="calendar-col calendar-date"></div>
                             {
                                 month_list.map((_month, index) => (
-                                    <td key={index}>{ this.props.lang.line(_month) }</td>
+                                    <div key={index} className="calendar-col">{ this.props.lang.line(_month) }</div>
                                 ))
                             }
-                        </tr>
+                        </div>
                         {
                             date_list.map((day_canevas, index) => (
-                                <tr key={index}>
-                                    <td className="calendar-date">{ day_canevas }</td>
+                                <div key={index} className="calendar-row">
+                                    <div className="calendar-col calendar-date">{ day_canevas }</div>
                                     {
                                         month_list.map((_month, month_index) => (
-                                            <td key={month_index} className={ 
+                                            <div 
+                                                key={month_index} 
+                                                className={ 
+                                                'calendar-col ' +
                                                 ((day_canevas === day && month_index === month) ? 'selected' : '') + ' ' +
                                                 ((this.has_date(day_canevas, month_index, year)) ? '' : 'not-active') + ' ' +
                                                 ((this.has_date(day_canevas, month_index, year) && this.is_week_end(day_canevas, month_index, year)) ? 'week-end' : '') + ' ' +
-                                                ((day_canevas === state_now.day && month_index === state_now.month) ? 'now' : '') }>
+                                                ((day_canevas === state_now.day && month_index === state_now.month) ? 'now' : '') }
+                                                onDragOver={(e) => this.handle_drag_over(e)}
+                                                onDrop={(e) => this.handle_drop(e, { day: day_canevas, month: month_index + 1, year: year })}>
 
                                                 { this.render_menu_list(menu_list, '', { day: day_canevas, month: month_index + 1, year: year }, true) }
 
                                                 {
-                                                    item_list.map((item) => (
+                                                    item_list.map((item, item_index) => (
                                                         (item.date == day_canevas && item.month == month_index) &&
                                                         <Item
+                                                            key={item_index}
                                                             title={item.title}
                                                             description={item.description}
                                                             hour_begin={item.hour_begin}
                                                             hour_end={item.hour_end}
                                                             show_description={false}
+                                                            onDragStart={(e) => this.handle_drag_start(e, item)}
                                                             />
                                                     ))
                                                 }
 
-                                            </td>
+                                            </div>
                                         ))
                                     }
-                                </tr>
+                                </div>
                             ))
                         }
                         
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             )
         }
 
@@ -436,38 +501,62 @@ class Table extends Component {
 
             const day_list = this.get_simple_day_list(month, year)
             const hour_list = this.get_hour_list()
+            const item_list = this.get_item_list(year, month, day)
+            console.log('hour', day, item_list)
 
             return (
-                <table className="calendar calendar-hours">
-                    <tbody>
-                        <tr className="calendar-header">
-                            <td className="calendar-date"></td>
+                <div className="calendar calendar-hours">
+                    <div>
+                        <div className="calendar-row calendar-header">
+                            <div className="calendar-col calendar-date"></div>
                             {
                                 day_list.map((_day, index) => (
-                                    <td key={index}>{ _day.day }</td>
+                                    <div key={index} className="calendar-col ">{ _day.day }</div>
                                 ))
                             }
-                        </tr>
+                        </div>
                         {
                             hour_list.map((_hour, index) => (
-                                <tr key={index}>
-                                    <td className="calendar-hour">{ _hour.hour } : { _hour.minute }</td>
+                                <div key={index} className="calendar-row">
+                                    <div className="calendar-col calendar-hour">{ this.get_view_hour(_hour.hour) } : { this.get_view_hour(_hour.minute) }</div>
                                     {
                                         day_list.map((_day, day_index) => (
-                                            <td key={day_index} className="" onClick={(e) => this.handle_cell_click({ day: _day.day, month: _day.month, year: _day.year, hour: _hour.hour, minute: _hour.minute }, e)}>
+                                            <div 
+                                                key={day_index} 
+                                                className="calendar-col " 
+                                                onClick={(e) => this.handle_cell_click({ day: _day.day, month: _day.month, year: _day.year, hour: _hour.hour, minute: _hour.minute }, e)}
+                                                onDragOver={(e) => this.handle_drag_over(e)}
+                                                onDrop={(e) => this.handle_drop(e, { day: _day.day, month: _day.month, year: _day.year, hour: _hour.hour, minute: _hour.minute })}>
+
                                                 { this.render_menu_list(menu_list, '', { day: _day.day, month: month, year: year }) }
-                                            </td>
+
+                                                {
+                                                    item_list.map((item, item_index) => (
+                                                        (item._hour_begin.hour >= _hour.hour && item._hour_end.hour <= _hour.hour) &&
+                                                        <Item
+                                                            key={item_index}
+                                                            title={item.title}
+                                                            description={item.description}
+                                                            hour_begin={item.hour_begin}
+                                                            hour_end={item.hour_end}
+                                                            show_description={false}
+                                                            onClick={(e) => this.props.onItemClick(item, e) }
+                                                            onDragStart={(e) => this.handle_drag_start(e, item)}
+                                                            />
+                                                    ))
+                                                }
+                                            </div>
                                         ))
                                     }
-                                </tr>
+                                </div>
                             ))
                         }
                         
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             )
         }
     }
 }
 
-export default Table
+export default Calendar

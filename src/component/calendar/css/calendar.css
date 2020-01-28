@@ -23,78 +23,51 @@
 	padding-bottom: 120px;
 }
 
+
 /*Table*/
-.calendar .calendar-header td{
-	font-family: 'Hind Bold';
-	padding: 10px 40px;
-	text-align: center;
-	position: sticky;
-	top: 0;
-	z-index: 99;
-	background-color: #fff;
+.calendar{
+	display: flex;
 }
-.calendar .calendar-hour,
-.calendar .calendar-date{
-	font-family: 'Hind Bold';
-	padding: 10px 40px;
-	text-align: center;
-	background-color: #fff;
-	position: sticky;
-	left: 0;
-	z-index: 98;
+.calendar-row{
+	display: flex;
+	flex-direction: row;
+	width: unset;
 }
-
-/*Month*/
-.calendar-month{
-	min-width: 100%;
-}
-
-.calendar-month .calendar-header td{
-	font-family: 'Hind Bold';
-	padding: 10px 40px;
-	text-align: center;
-}
-.calendar-month tr td{
+.calendar-row .calendar-col{
+	flex: 1;
 	position: relative;
 	padding: 40px 10px;
-	padding-top: 40px;
 	padding-bottom: 20px;
 	border: 1px solid #bbb;
 	cursor: pointer;
-	max-width: 200px;
-	width: 200px;
+	width: 140px;
+	min-width: 140px;
+	margin-bottom: -1px;
+	margin-right: -1px;
 }
-.calendar-month tr td.now{
+.calendar-row .calendar-col.now{
 	background-color: #bbb;
 }
-.calendar-hours tr td.selected,
-.calendar-month tr td.selected,
-.calendar-year tr td.selected,
-.calendar-hours tr td:hover,
-.calendar-month tr td:hover,
-.calendar-year tr td:hover{
+.calendar-row .calendar-col.selected,
+.calendar-row .calendar-col:hover{
 	background-color: #eee;
 }
-.calendar-month tr td.active span.text{
-	color: #000;
-}
-.calendar-month tr td span.text{
+.calendar-row .calendar-col span.text{
 	position: absolute;
 	top: 15px;
-	left: 15px;
+	left: 10px;
 	color: #888;
 }
-.calendar-hours tr td .dropdown,
-.calendar-year tr td .dropdown,
-.calendar-month tr td .dropdown{
+.calendar-row .calendar-col.active span.text{
+	color: #000;
+}
+.calendar-row .calendar-col .dropdown{
 	position: initial;
 }
-.calendar-month tr td .dropdown .dropdown-element{
+.calendar-row .calendar-col .dropdown-element{
 	top: 90%;
 }
-.calendar-hours tr td .menu-wrapper,
-.calendar-year tr td .menu-wrapper,
-.calendar-month tr td .menu-wrapper{
+.calendar-row .calendar-col .menu-wrapper{
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -102,23 +75,29 @@
 	bottom: 0;
 	z-index: 2;
 }
+/*Month*/
+.calendar-month > div{
+	width: 100%;
+}
+
 /*Year*/
 .calendar-year{
 	min-width: 100%;
 }
-.calendar-year tr td{
+.calendar-year .calendar-row .calendar-col{
 	position: relative;
 	padding: 10px 20px;
 	border: 1px solid #bbb;
 	cursor: pointer;
+	min-width: 64px;
 }
-.calendar-year tr td.not-active{
+.calendar-year .calendar-row .calendar-col.not-active{
 	background-color: #eee;
 }
-.calendar-year tr td.week-end{
+.calendar-year .calendar-row .calendar-col.week-end{
 	background-color: #d7fdeb;
 }
-.calendar-year tr td:not(.calendar-date){
+.calendar-year .calendar-row .calendar-col:not(.calendar-date){
 	min-width: 240px;
 }
 
@@ -131,7 +110,7 @@
 	padding: 5px 5px;
 	text-align: right;
 }
-.calendar-hours tr td{
+.calendar-hours .calendar-col{
 	position: relative;
 	padding: 10px 20px;
 	border: 1px solid #bbb;
@@ -140,6 +119,8 @@
 
 /*Item*/
 .calendar-item{
+	position: relative;
+	z-index: 9;
 	overflow: hidden;
 	max-width: 180px;
 	background-color: #ddd;
@@ -161,4 +142,35 @@
 
 .calendar-year .calendar-item{
 	max-width: 240px;
+}
+
+/*Calendar Item*/
+.calendar-header{
+
+	font-family: 'Hind Bold';
+	text-align: center;
+	position: sticky;
+	top: 0;
+	z-index: 99;
+}
+.calendar-header .calendar-col{
+	padding-top: 20px;
+	padding-bottom: 20px;
+	background-color: #fff;
+}
+.calendar .calendar-col.calendar-hour,
+.calendar .calendar-col.calendar-date{
+	font-family: 'Hind Bold';
+	padding: 10px 40px;
+	text-align: center;
+	background-color: #fff;
+	position: sticky;
+	left: 0;
+	z-index: 98;
+}
+.calendar .calendar-col.calendar-hour{
+	width: 80px;
+	min-width: 80px;
+	padding-left: 20px;
+	padding-right: 20px;
 }

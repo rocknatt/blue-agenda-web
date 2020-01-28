@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Dropdown, Modal } from 'mzara-component'
+import { Dropdown, Modal, ModalForm } from 'mzara-component'
 import { DateHelper } from 'mzara-library'
 
 import SkyCalendar from '../../component/calendar/index'
+import BookingController from '../../controller/booking'
 
-import BookingCreateForm from './widget/BookingCreateForm'
+import Read from './Read'
 
 class Home extends Component {
     state = {
@@ -23,8 +24,11 @@ class Home extends Component {
         //Todo : save date selected by user and save it inside session
 
         this.state = {
-            is_add_new_booking: false
+            // is_add_new_booking: false
         }
+
+        this.init_controller()
+        this.controller.add_event_listner('list_change', this.handle_list_change)
     }
 
     componentWillReceiveProps(nextProps){
@@ -36,7 +40,7 @@ class Home extends Component {
     }
 
     componentWillUnmount(){
-
+        this.controller.remove_event_listner('list_change', this.handle_list_change)
     }
 
     componentWillUpdate(nextProps, nextState){
@@ -47,13 +51,61 @@ class Home extends Component {
         
     }
 
+    init_controller(){
+        this.controller = new BookingController({
+            ajax: this.props.ajax,
+            lang: this.props.lang,
+            hub: this.props.hub,
+        })
+    }
+
+    handle_list_change = () => {
+        this.refresh()
+    }
+
+    get_form(data){
+        let form_data = this.controller.get_form(data)
+        form_data.onSubmit = this.handle_create_form_submit
+        form_data.onSubmited = () => this.dismiss_modal_form()
+        form_data.onCancel = () => this.dismiss_modal_form()
+
+        return form_data
+    }
+
     handle_calendar_cell_menu_click = (label, data) => {
         switch(label){
             case 'new_booking':
-
-                this.setState({ is_add_new_booking: true, date: data.compiled_date, hour: data.compiled_hour })
+                this.setState({ is_show_modal_form: true, data_modal_form: this.get_form({ date: data.compiled_date, hour: data.compiled_hour }) })
                 break;
         }
+    }
+
+    handle_item_click = (data, e) => {
+        this.setState({ is_show_item: true, item_data: data })
+    }
+
+    handle_create_form_submit = (data, success, error) => {
+        this.controller.create(data, () => {
+            success()
+        }, error)
+    }
+
+    handle_on_delete_click = (data) => {
+        this.controller.delete(data.id, 
+        () => {
+            //success
+            this.setState({ is_show_item: false })
+            // this.props.navigation.load('role')
+        }, 
+        () => this.setState({ error_message: this.props.lang.line('std_cant_be_deleted') }) )
+    }
+
+    dismiss_modal_form(){
+        this.setState({ is_show_modal_form: false })
+    }
+
+    handle_drop = (data) => {
+        this.controller.update(data, () => this.refresh())
     }
 
     get_cell_menu_list(){
@@ -62,20 +114,22 @@ class Home extends Component {
         ]
     }
 
+    refresh(){
+        this.forceUpdate()
+    }
+
     render() {
 
         const { 
             date,
             hour,
-            is_add_new_booking, 
+            is_show_item,
+            item_data, 
+            is_show_modal_form,
+            data_modal_form,
         } = this.state
 
-        const date_item_list = [
-            { title: 'New booking 1', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/08', hour_begin: '09:30', hour_end: '10:15' },
-            { title: 'New booking 2', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/10', hour_begin: '09:30', hour_end: '10:15' },
-            { title: 'New booking 3', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/13', hour_begin: '09:30', hour_end: '10:15' },
-            { title: 'New booking 4', description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod', date: '2020/01/13', hour_begin: '09:30', hour_end: '10:15' },
-        ]
+        const date_item_list = this.controller.get_item_list()
         
         return (
             <div className="">
@@ -83,29 +137,41 @@ class Home extends Component {
                     cell_menu_list={this.get_cell_menu_list()}
                     item_list={date_item_list}
                     lang={this.props.lang}
+                    onItemClick={this.handle_item_click}
                     onCellMenuClick={this.handle_calendar_cell_menu_click}
+                    onDrop={this.handle_drop}
                     />
 
                 {
-                    is_add_new_booking &&
+                    is_show_modal_form &&
+                    <ModalForm
+                        ajax={this.props.ajax}
+                        lang={this.props.lang}
+                        data={data_modal_form}
+                        />
+                }
+
+                {
+                    is_show_item &&
                     <Modal 
                         className=""
                         confimation_type="none"
                         is_opened_default={true}
                         is_dismissable={true}
-                        onDismiss={() => this.setState({ is_add_new_booking: false })}
+                        onDismiss={() => this.setState({ is_show_item: false })}
                         lang={this.props.lang}>
 
-                        <BookingCreateForm
+                        <Read
+                            ajax={this.props.ajax}
                             lang={this.props.lang}
-                            date={date}
-                            hour={hour}
+                            data={item_data}
+                            controller={this.controller}
+                            onDelete={this.handle_on_delete_click}
                             />
 
                     </Modal>
                 }
             </div>
-            
         )
     }
 }

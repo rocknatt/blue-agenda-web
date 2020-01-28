@@ -153,36 +153,7 @@ class Main extends Component {
                         </ul>
 
                         <ul className="navbar-nav mr-auto d-none d-lg-flex">
-                            <li className="nav-item">
-                                <a className="nav-link" href={Utils.site_url('post')}>
-                                    { this.props.lang.line('std_home') }
-                                    <span className="badge">{ this.get_view_badge(home_badge) }</span>
-                                </a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href={Utils.site_url('shop')}>
-                                    { this.props.lang.line('std_shop') }
-                                    <span className="badge">{ this.get_view_badge(shop_badge) }</span>
-                                </a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href={Utils.site_url('produit')}>
-                                    { this.props.lang.line('std_product') }
-                                    <span className="badge">{ this.get_view_badge(product_badge) }</span>
-                                </a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href={Utils.site_url('map')}>
-                                    { this.props.lang.line('std_map') }
-                                </a>
-                            </li>
-
-                            <li className="nav-item">
-                                <a className="nav-link" href={Utils.site_url('event')}>
-                                    { this.props.lang.line('std_event') }
-                                    <span className="badge">{ this.get_view_badge(event_badge) }</span>
-                                </a>
-                            </li>
+                            
                         </ul>
 
                         <ul className="navbar-nav">
@@ -191,28 +162,6 @@ class Main extends Component {
                                     <i className="fa fa-search"></i>
                                 </a>
                             </li>
-                            {
-                                user.id !== 0 &&
-                                <li className="chat-menu">
-                                    <Dropdown
-                                    position="top right"
-                                    close_on_click={false}
-                                    dropdown_btn={( 
-                                        <a className="nav-link dropdown-toggle noAjax" href="#" id="navbardrop" data-toggle="dropdown" onClick={this.handle_chat_click}>
-                                            <i className="fa fa-comments"></i>
-                                            <span className="badge badge-float badge-danger">{ this.get_view_badge(chat_badge) }</span>
-                                        </a>  
-                                    )}
-                                    dropdown_element={
-                                        (
-                                            <div className="dropdown-menu show animated fadeInUp animated-x-fast">
-                                                
-                                            </div>
-                                        )
-                                    }
-                                    />
-                                </li>
-                            }
                             
                             {
                                 user.id !== 0 &&
@@ -330,7 +279,7 @@ class Main extends Component {
 
 const menu_list = [
     { href: 'home', className: '', icon: 'fa-home', lang: 'std_home' },
-    { href: 'crystal/init', className: '', icon: 'fa-gem', lang: 'std_crystal' },
+    { href: 'calendar', className: '', icon: 'fa-calendar', lang: 'std_calendar' },
 ]
 
 const mapStateToProps = (state) => {

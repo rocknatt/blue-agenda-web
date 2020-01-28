@@ -1,14 +1,17 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Ajax, Hub, Lang } from 'mzara-library'
+import { Hub, Lang, DOMHelper, Ajax } from 'mzara-library'
 import { Chat, UserRip } from 'mzara-controller'
 import { Alert, Modal } from 'mzara-component'
 
 import Navigation from './navigation/Navigation'
 import Navbar from './page/navbar/Main'
-import Utils from './Utils/Utils'
 
 import Spinner from './component/Spinner'
+
+// import Login from './page/user/Login'
+
+import Config from './config/app'
 
 // Chargement des fichier css
 import './assets/css/dropdown.css'
@@ -42,10 +45,10 @@ class Root extends Component {
             alert_data: {},
             is_loading: true,
             is_navigation_mounted: false,
+            is_show_login: false
         }
 
         this.navbar = React.createRef()
-        this.navigation = React.createRef()
         this.modal_message_component = React.createRef()
         this.main_container = React.createRef()
     }
@@ -63,7 +66,9 @@ class Root extends Component {
     }
 
     componentDidMount(){
-        this.ajax = new Ajax()
+        this.ajax = new Ajax({
+            base_url: Config.base_url,
+        })
 
         const action = { type: 'INIT_AJAX', ajax: this.ajax }
         this.props.dispatch(action)
@@ -71,16 +76,16 @@ class Root extends Component {
         //init process
         this.init_lang(
             () => this.init_user(
-                    (user) => {
-                        this.init_hub(user, 
-                            () => {
-                                this.init_user_rip(user)
-                                this.init_chat_controller()
-                                this.handle_loading_finished()
-                            }
-                        )
-                    }
-                )
+                (user) => {
+                    this.init_hub(user, 
+                        () => {
+                            this.init_user_rip(user)
+                            // this.init_chat_controller()
+                            this.handle_loading_finished()
+                        }
+                    )
+                }
+            )
         )
     }
 
@@ -92,7 +97,7 @@ class Root extends Component {
 
         this.lang = new Lang({
             ajax: this.ajax,
-            url: Utils.site_url('home/get_lang'),
+            url:  'lang',
             callback: (obj) => {
                 const action = { type: 'INIT_LANG', lang: obj }
                 this.props.dispatch(action)
@@ -107,20 +112,23 @@ class Root extends Component {
 
     init_user(callback){
 
-        this.ajax.get_json(Utils.site_url('home/get_user_identity'), {}, (response) => {
+        this.ajax.get_json('identity', {}, (response) => {
 
-            this.user = response.user
-            const action = { type: 'INIT_USER', user: response.user }
+            this.user = response
+            const action = { type: 'INIT_USER', user: response }
             this.props.dispatch(action)
 
             if (callback !== undefined) {
-                callback(response.user)
-            }            
+                callback(response)
+            }
+
+            if (this.user.id === null && Config.require_auth) {
+                this.setState({ is_show_login: true })
+            }
         })
     }
 
     init_user_rip(user){
-
         let user_rip = new UserRip({ 
             hub: this.hub,
             ajax: this.ajax,
@@ -136,8 +144,8 @@ class Root extends Component {
         var src = document.getElementById('src')
         this.hub = new Hub({ 
             user: user, 
-            host: Utils.attr(src, 'sp-websocket-host'),
-            host_boot: Utils.attr(src, 'sp-websocket-host-boot'),
+            host: Config.websocket,
+            host_boot: Config.websocket_boot,
         })
 
         const action = { type: 'INIT_HUB', hub: this.hub }
@@ -155,7 +163,7 @@ class Root extends Component {
             lang: this.lang,
             user: this.user,
             hub: this.hub,
-            base_url: Utils.site_url('')
+            base_url: this.ajax.site_url('')
         })
 
         const action = { type: 'INIT_CHAT', chat_controller: this.chat_controller }
@@ -182,8 +190,15 @@ class Root extends Component {
         })
     }
 
-    handle_navigation_mounted = (e) => {
-        this.setState({ is_navigation_mounted: true })
+    handle_navigation_mounted = (navigation) => {
+        this.setState(function () {
+            
+
+            this.navigation = navigation
+            navigation.load(Config.url)
+
+            return { is_navigation_mounted: true }
+        })
     }
 
     add_load_event(func){
@@ -225,23 +240,23 @@ class Root extends Component {
     }
 
     is_scrollable(){
-        return this.main_container.current.scrollHeight > Utils.get_height(this.main_container.current)
+        return this.main_container.current.scrollHeight > DOMHelper.get_height(this.main_container.current)
     }
 
     is_scrollable_x(){
-        if (Utils.get_width(this.main_container.current) === 0) {
+        if (DOMHelper.get_width(this.main_container.current) === 0) {
             return false
         }
 
-        return this.main_container.current.scrollWidth > Utils.get_width(this.main_container.current)
+        return this.main_container.current.scrollWidth > DOMHelper.get_width(this.main_container.current)
     }
 
     is_scrollable_y(){
-        if (Utils.get_height(this.main_container.current) === 0) {
+        if (DOMHelper.get_height(this.main_container.current) === 0) {
             return false
         }
 
-        return this.main_container.current.scrollHeight > Utils.get_height(this.main_container.current)
+        return this.main_container.current.scrollHeight > DOMHelper.get_height(this.main_container.current)
     }
 
     scroll_to_top(){
@@ -293,6 +308,18 @@ class Root extends Component {
         }, duration + 1000)
     }
 
+    load_login(message){
+        this.setState({ is_show_login: true, login_message: message })
+    }
+
+    handle_login_submited = () => {
+        // this.init_user(() => {
+        //     this.setState({ is_show_login: false, login_message: '' })
+        // })
+
+        this.navigation.reload()
+    }
+
     render() {
 
         const { 
@@ -300,6 +327,8 @@ class Root extends Component {
             lang_loaded, 
             is_showing_alert,
             is_navigation_mounted,
+            is_show_login,
+            login_message,
             alert_data
         } = this.state
 
@@ -332,11 +361,11 @@ class Root extends Component {
                 
                 
                 <Navigation 
-                    ref={this.navigation}
                     parent={this}
                     lang={this.lang}
                     ajax={this.ajax}
                     user={this.user}
+                    Config={Config}
                     onNavigationMounted={this.handle_navigation_mounted} />
 
                 {
@@ -348,6 +377,25 @@ class Root extends Component {
                         is_dissmissable={ alert_data.is_dissmissable }
                         onClick={ alert_data.onClick }
                         />
+                }
+
+                {
+                    /*is_show_login &&
+                    <Modal 
+                        className="modal-md"
+                        confimation_type="none"
+                        is_opened_default={true}
+                        is_dismissable={!Config.require_auth}
+                        onDismiss={() => this.setState({ is_show_login: false })}
+                        lang={this.props.lang}>
+
+                        <Login 
+                            ajax={this.ajax}
+                            lang={this.lang}
+                            onSubmited={this.handle_login_submited}
+                            />
+
+                    </Modal>*/
                 }
 
                 <Modal 
