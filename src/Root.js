@@ -123,20 +123,29 @@ class Root extends Component {
 
     init_user(callback){
 
-        this.ajax.get_json('identity', {}, (response) => {
+        // this.ajax.get_json('identity', {}, (response) => {
 
-            this.user = response
-            const action = { type: 'INIT_USER', user: response }
-            this.props.dispatch(action)
+        //     this.user = response
+        //     const action = { type: 'INIT_USER', user: response }
+        //     this.props.dispatch(action)
 
-            if (callback !== undefined) {
-                callback(response)
-            }
+        //     if (callback !== undefined) {
+        //         callback(response)
+        //     }
 
-            if (this.user.id === null && Config.require_auth) {
-                this.setState({ is_show_login: true })
-            }
-        })
+        //     if (this.user.id === null && Config.require_auth) {
+        //         this.setState({ is_show_login: true })
+        //     }
+        // })
+
+        //exception dev
+        this.user = {"id":"1","user_id":"1","user_name":"superadmin","session_id":"2","session_user_id":"4","token":"CBIxhrD8k7q2peUXPLMf","is_active":"1","is_remember":"0","user_role_id":"2","user_role":"super_admin","user_role_rules":""}
+        const action = { type: 'INIT_USER', user: this.user }
+        this.props.dispatch(action)
+
+        if (callback !== undefined) {
+            callback(this.user)
+        }
     }
 
     init_user_rip(user){
